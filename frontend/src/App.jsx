@@ -4,12 +4,14 @@ import LoginPage from './pages/LoginPage.jsx';
 import NotFoundPage from './pages/NotFoundPage.jsx';
 import HomePage from './pages/HomePage.jsx';
 import PrivateRoute from './components/PrivateRoute.jsx';
-import { AuthProvider } from './contexts/AuthContext.jsx'; 
+import { AuthProvider } from './contexts/AuthContext.jsx';
+import ModalManager from './components/modals/ModalManager.jsx';
 
 function App() {
   return (
-    <AuthProvider> {}
+    <AuthProvider>
       <BrowserRouter>
+        <ModalManager /> {/* ✅ отображаем модалки поверх всего */}
         <Routes>
           <Route
             path="/"

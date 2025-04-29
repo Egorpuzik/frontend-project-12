@@ -26,7 +26,11 @@ const chatSlice = createSlice({
     status: 'idle',
     error: null,
   },
-  reducers: {},
+  reducers: {
+    newMessage: (state, action) => {
+      state.messages.push(action.payload);
+    },
+  },
   extraReducers: (builder) => {
     builder
       .addCase(fetchChatData.pending, (state) => {
@@ -43,5 +47,7 @@ const chatSlice = createSlice({
       });
   },
 });
+
+export const { newMessage } = chatSlice.actions;
 
 export default chatSlice.reducer;
