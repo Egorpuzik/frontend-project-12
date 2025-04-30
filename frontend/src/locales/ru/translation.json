@@ -1,0 +1,32 @@
+{
+    "login": {
+      "header": "Вход в чат",
+      "username": "Имя пользователя",
+      "password": "Пароль",
+      "submit": "Войти",
+      "noAccount": "Нет аккаунта?",
+      "signup": "Регистрация"
+    },
+    "signup": {
+      "header": "Регистрация",
+      "username": "Имя пользователя",
+      "password": "Пароль",
+      "confirmPassword": "Подтвердите пароль",
+      "submit": "Зарегистрироваться"
+    },
+    "errors": {
+      "required": "Обязательное поле",
+      "min": "Минимум {{min}} символов",
+      "max": "Максимум {{max}} символов",
+      "passwordsMustMatch": "Пароли должны совпадать",
+      "authFailed": "Неверные имя пользователя или пароль",
+      "userExists": "Пользователь уже существует"
+    },
+    "chat": {
+      "channels": "Каналы",
+      "send": "Отправить"
+    },
+    "logout": "Выйти",
+    "hexletChat": "Hexlet Chat"
+  }
+  

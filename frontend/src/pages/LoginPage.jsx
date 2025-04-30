@@ -5,8 +5,10 @@ import axios from 'axios';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext.jsx';
 import { useSelector } from 'react-redux';
+import { useTranslation } from 'react-i18next';
 
 const SignupPage = () => {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const auth = useAuth();
   const existingUsernames = useSelector((state) =>
@@ -15,15 +17,15 @@ const SignupPage = () => {
 
   const validationSchema = Yup.object({
     username: Yup.string()
-      .required('Обязательное поле')
-      .min(3, 'От 3 до 20 символов')
-      .max(20, 'От 3 до 20 символов'),
+      .required(t('signup.errors.required'))
+      .min(3, t('signup.errors.usernameLength'))
+      .max(20, t('signup.errors.usernameLength')),
     password: Yup.string()
-      .required('Обязательное поле')
-      .min(6, 'Не менее 6 символов'),
+      .required(t('signup.errors.required'))
+      .min(6, t('signup.errors.passwordLength')),
     confirmPassword: Yup.string()
-      .required('Обязательное поле')
-      .oneOf([Yup.ref('password')], 'Пароли должны совпадать'),
+      .required(t('signup.errors.required'))
+      .oneOf([Yup.ref('password')], t('signup.errors.passwordsMustMatch')),
   });
 
   const handleSubmit = async (values, { setSubmitting, setErrors }) => {
@@ -31,13 +33,13 @@ const SignupPage = () => {
       const { username, password } = values;
       const response = await axios.post('/api/v1/signup', { username, password });
 
-      auth.logIn(response.data.token); // сохранить токен
+      auth.logIn(response.data.token);
       navigate('/');
     } catch (error) {
       if (error.response?.status === 409) {
-        setErrors({ username: 'Пользователь с таким именем уже существует' });
+        setErrors({ username: t('signup.errors.userExists') });
       } else {
-        setErrors({ submit: 'Ошибка регистрации. Попробуйте позже' });
+        setErrors({ submit: t('signup.errors.serverError') });
       }
     } finally {
       setSubmitting(false);
@@ -46,7 +48,7 @@ const SignupPage = () => {
 
   return (
     <div>
-      <h2>Регистрация</h2>
+      <h2>{t('signup.header')}</h2>
       <Formik
         initialValues={{
           username: '',
@@ -56,32 +58,32 @@ const SignupPage = () => {
         validationSchema={validationSchema}
         onSubmit={handleSubmit}
       >
-        {({ errors, touched }) => (
+        {({ errors }) => (
           <Form>
             {errors.submit && <div style={{ color: 'red' }}>{errors.submit}</div>}
 
             <div>
-              <label htmlFor="username">Имя пользователя</label>
+              <label htmlFor="username">{t('signup.username')}</label>
               <Field name="username" type="text" />
               <ErrorMessage name="username" component="div" style={{ color: 'red' }} />
             </div>
 
             <div>
-              <label htmlFor="password">Пароль</label>
+              <label htmlFor="password">{t('signup.password')}</label>
               <Field name="password" type="password" />
               <ErrorMessage name="password" component="div" style={{ color: 'red' }} />
             </div>
 
             <div>
-              <label htmlFor="confirmPassword">Подтвердите пароль</label>
+              <label htmlFor="confirmPassword">{t('signup.confirmPassword')}</label>
               <Field name="confirmPassword" type="password" />
               <ErrorMessage name="confirmPassword" component="div" style={{ color: 'red' }} />
             </div>
 
-            <button type="submit">Зарегистрироваться</button>
+            <button type="submit">{t('signup.submit')}</button>
 
             <p>
-              Уже есть аккаунт? <Link to="/login">Войти</Link>
+              {t('signup.haveAccount')} <Link to="/login">{t('signup.login')}</Link>
             </p>
           </Form>
         )}

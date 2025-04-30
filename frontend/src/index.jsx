@@ -3,6 +3,7 @@ import ReactDOM from 'react-dom/client';
 import App from './App.jsx';
 import { Provider } from 'react-redux';
 import { store } from './store';
+import './i18n.js';
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
 
