@@ -9,6 +9,9 @@ import { AuthProvider } from './contexts/AuthContext.jsx';
 import ModalManager from './components/modals/ModalManager.jsx';
 import Header from './components/Header.jsx';
 
+import { ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+
 function App() {
   return (
     <AuthProvider>
@@ -28,6 +31,9 @@ function App() {
           <Route path="/signup" element={<SignupPage />} />
           <Route path="*" element={<NotFoundPage />} />
         </Routes>
+        
+        {/* ✅ Контейнер для отображения уведомлений */}
+        <ToastContainer position="top-right" autoClose={5000} />
       </BrowserRouter>
     </AuthProvider>
   );
