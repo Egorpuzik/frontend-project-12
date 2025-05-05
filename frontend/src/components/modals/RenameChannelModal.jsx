@@ -3,7 +3,8 @@ import { useDispatch, useSelector } from 'react-redux';
 import { useFormik } from 'formik';
 import * as Yup from 'yup';
 import { closeModal } from '../../store/modalsSlice';
-import { emitRenameChannel } from '../../sockets/index.js'; 
+import { emitRenameChannel } from '../../sockets/index.js';
+import filterProfanity from '../../utils/filterProfanity.js'; 
 
 const RenameChannelModal = () => {
   const dispatch = useDispatch();
@@ -29,10 +30,12 @@ const RenameChannelModal = () => {
         .notOneOf(existingNames, 'Такой канал уже существует'),
     }),
     onSubmit: (values, { setSubmitting, resetForm }) => {
-      emitRenameChannel({ id: channel.id, name: values.name.trim() }, () => {
+      const cleanedName = filterProfanity(values.name.trim()); 
+
+      emitRenameChannel({ id: channel.id, name: cleanedName }, () => {
         dispatch(closeModal());
         setSubmitting(false);
-        resetForm(); 
+        resetForm();
       });
     },
   });
@@ -64,4 +67,3 @@ const RenameChannelModal = () => {
 };
 
 export default RenameChannelModal;
-

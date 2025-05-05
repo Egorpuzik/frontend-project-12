@@ -1,66 +1,96 @@
-import React from 'react';  
-import { useDispatch, useSelector } from 'react-redux';
+import React, { useEffect, useRef } from 'react';
 import { useFormik } from 'formik';
 import * as Yup from 'yup';
-import { closeModal } from '../../store/modalsSlice'; 
-import { emitNewChannel } from '../../sockets/index.js'; 
-import { setCurrentChannelId } from '../../store/channelsSlice.js'; 
+import { useDispatch, useSelector } from 'react-redux';
+import { Modal, Form, Button } from 'react-bootstrap';
+import { useTranslation } from 'react-i18next';
+import leoProfanity from 'leo-profanity';
+
+import { closeModal } from '../../slices/modalSlice.js';
+import { useSocket } from '../../hooks/index.js';
+import { setCurrentChannelId } from '../../slices/channelsSlice.js';
+import filterProfanity from '../../utils/filterProfanity.js';
 
 const AddChannelModal = () => {
+  const { t } = useTranslation();
   const dispatch = useDispatch();
-  const isOpen = useSelector((state) => state.modals.addChannelModal.isOpen);
-  const channels = useSelector((state) => state.channels.channels); 
+  const socket = useSocket();
+  const inputRef = useRef();
 
-  const channelNames = channels.map((ch) => ch.name);
+  const channels = useSelector((state) => state.channels.channels);
+  const existingChannelNames = channels.map((ch) => ch.name.toLowerCase());
+
+  useEffect(() => {
+    inputRef.current?.focus();
+  }, []);
 
   const formik = useFormik({
-    initialValues: {
-      name: '',
-    },
+    initialValues: { name: '' },
     validationSchema: Yup.object({
       name: Yup.string()
         .trim()
-        .min(3, 'Имя канала должно содержать минимум 3 символа')
-        .max(20, 'Имя канала не может превышать 20 символов')
-        .required('Поле обязательно для заполнения')
-        .notOneOf(channelNames, 'Такой канал уже существует'), 
+        .required(t('errors.required'))
+        .min(3, t('errors.min', { min: 3 }))
+        .max(20, t('errors.max', { max: 20 }))
+        .notOneOf(existingChannelNames, t('errors.channelExists')),
     }),
-    onSubmit: (values, { setSubmitting, resetForm }) => {
-      const trimmedName = values.name.trim();
-      emitNewChannel({ name: trimmedName }, (newChannel) => {
-        dispatch(setCurrentChannelId(newChannel.id)); 
-        dispatch(closeModal());
+    onSubmit: async ({ name }, { setSubmitting, setErrors, resetForm }) => {
+      const cleanedName = filterProfanity(name.trim());
+
+      socket.emit('newChannel', { name: cleanedName }, (response) => {
+        if (response.status === 'ok') {
+          dispatch(setCurrentChannelId(response.data.id));
+          dispatch(closeModal());
+          resetForm();
+        } else {
+          setErrors({ name: t('errors.network') });
+        }
         setSubmitting(false);
-        resetForm();
       });
     },
   });
 
-  if (!isOpen) return null; 
-
   return (
-    <div className="modal">
-      <h3>Добавить канал</h3>
-      <form onSubmit={formik.handleSubmit}>
-        <label htmlFor="name">Имя канала</label>
-        <input
-          id="name"
-          name="name"
-          type="text"
-          value={formik.values.name}
-          onChange={formik.handleChange}
-          onBlur={formik.handleBlur}
-          autoFocus
-        />
-        {formik.touched.name && formik.errors.name && <div>{formik.errors.name}</div>}
-        <button type="submit" disabled={formik.isSubmitting}>
-          Создать канал
-        </button>
-        <button type="button" onClick={() => dispatch(closeModal())}>
-          Отмена
-        </button>
-      </form>
-    </div>
+    <Modal show centered onHide={() => dispatch(closeModal())}>
+      <Modal.Header closeButton>
+        <Modal.Title>{t('modals.add')}</Modal.Title>
+      </Modal.Header>
+      <Modal.Body>
+        <Form onSubmit={formik.handleSubmit}>
+          <Form.Group controlId="channelName">
+            <Form.Label>{t('modals.channelName')}</Form.Label>
+            <Form.Control
+              ref={inputRef}
+              name="name"
+              value={formik.values.name}
+              onChange={formik.handleChange}
+              isInvalid={formik.touched.name && !!formik.errors.name}
+              disabled={formik.isSubmitting}
+            />
+            <Form.Control.Feedback type="invalid">
+              {formik.errors.name}
+            </Form.Control.Feedback>
+          </Form.Group>
+          <div className="mt-3 d-flex justify-content-end">
+            <Button
+              variant="secondary"
+              onClick={() => dispatch(closeModal())}
+              className="me-2"
+              disabled={formik.isSubmitting}
+            >
+              {t('cancel')}
+            </Button>
+            <Button
+              type="submit"
+              variant="primary"
+              disabled={formik.isSubmitting}
+            >
+              {t('submit')}
+            </Button>
+          </div>
+        </Form>
+      </Modal.Body>
+    </Modal>
   );
 };
 
