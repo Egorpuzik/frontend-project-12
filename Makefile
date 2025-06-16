@@ -6,5 +6,4 @@ build:
 	cd frontend && npm run build
 
 start:
-	npm run start
-	npm run backend
+	npm run backend & npm run start
