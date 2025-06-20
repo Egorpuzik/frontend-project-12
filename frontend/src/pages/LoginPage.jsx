@@ -4,86 +4,58 @@ import * as Yup from 'yup';
 import axios from 'axios';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext.jsx';
-import { useSelector } from 'react-redux';
 import { useTranslation } from 'react-i18next';
 
-const SignupPage = () => {
+const LoginPage = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const auth = useAuth();
-  const existingUsernames = useSelector((state) =>
-    state.channels.channelsList.map((c) => c.name.toLowerCase())
-  );
 
   const validationSchema = Yup.object({
-    username: Yup.string()
-      .required(t('signup.errors.required'))
-      .min(3, t('signup.errors.usernameLength'))
-      .max(20, t('signup.errors.usernameLength')),
-    password: Yup.string()
-      .required(t('signup.errors.required'))
-      .min(6, t('signup.errors.passwordLength')),
-    confirmPassword: Yup.string()
-      .required(t('signup.errors.required'))
-      .oneOf([Yup.ref('password')], t('signup.errors.passwordsMustMatch')),
+    username: Yup.string().required(t('login.errors.required')),
+    password: Yup.string().required(t('login.errors.required')),
   });
 
   const handleSubmit = async (values, { setSubmitting, setErrors }) => {
     try {
-      const { username, password } = values;
-      const response = await axios.post('/api/v1/signup', { username, password });
-
+      const response = await axios.post('/api/v1/login', values);
       auth.logIn(response.data.token);
       navigate('/');
     } catch (error) {
-      if (error.response?.status === 409) {
-        setErrors({ username: t('signup.errors.userExists') });
-      } else {
-        setErrors({ submit: t('signup.errors.serverError') });
-      }
+      setErrors({ submit: t('login.errors.authFailed') });
     } finally {
       setSubmitting(false);
     }
   };
 
   return (
-    <div>
-      <h2>{t('signup.header')}</h2>
+    <div className="container mt-5">
+      <h1 className="mb-4">{t('login.header')}</h1>
       <Formik
-        initialValues={{
-          username: '',
-          password: '',
-          confirmPassword: '',
-        }}
+        initialValues={{ username: '', password: '' }}
         validationSchema={validationSchema}
         onSubmit={handleSubmit}
       >
         {({ errors }) => (
           <Form>
-            {errors.submit && <div style={{ color: 'red' }}>{errors.submit}</div>}
+            {errors.submit && <div className="alert alert-danger">{errors.submit}</div>}
 
-            <div>
-              <label htmlFor="username">{t('signup.username')}</label>
-              <Field name="username" type="text" />
-              <ErrorMessage name="username" component="div" style={{ color: 'red' }} />
+            <div className="mb-3">
+              <label htmlFor="username">{t('login.username')}</label>
+              <Field name="username" type="text" className="form-control" />
+              <ErrorMessage name="username" component="div" className="text-danger" />
             </div>
 
-            <div>
-              <label htmlFor="password">{t('signup.password')}</label>
-              <Field name="password" type="password" />
-              <ErrorMessage name="password" component="div" style={{ color: 'red' }} />
+            <div className="mb-3">
+              <label htmlFor="password">{t('login.password')}</label>
+              <Field name="password" type="password" className="form-control" />
+              <ErrorMessage name="password" component="div" className="text-danger" />
             </div>
 
-            <div>
-              <label htmlFor="confirmPassword">{t('signup.confirmPassword')}</label>
-              <Field name="confirmPassword" type="password" />
-              <ErrorMessage name="confirmPassword" component="div" style={{ color: 'red' }} />
-            </div>
+            <button type="submit" className="btn btn-primary">{t('login.submit')}</button>
 
-            <button type="submit">{t('signup.submit')}</button>
-
-            <p>
-              {t('signup.haveAccount')} <Link to="/login">{t('signup.login')}</Link>
+            <p className="mt-3">
+              {t('login.noAccount')} <Link to="/signup">{t('login.signup')}</Link>
             </p>
           </Form>
         )}
@@ -92,4 +64,4 @@ const SignupPage = () => {
   );
 };
 
-export default SignupPage;
+export default LoginPage;
