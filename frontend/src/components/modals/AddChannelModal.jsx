@@ -6,7 +6,6 @@ import { Modal, Form, Button } from 'react-bootstrap';
 import { useTranslation } from 'react-i18next';
 import leoProfanity from 'leo-profanity';
 
-import { closeModal } from '../../slices/modalSlice.js';
 import { useSocket } from '../../hooks/index.js';
 import { setCurrentChannelId } from '../../slices/channelsSlice.js';
 import filterProfanity from '../../utils/filterProfanity.js';
