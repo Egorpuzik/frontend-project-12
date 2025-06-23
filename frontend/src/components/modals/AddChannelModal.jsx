@@ -59,13 +59,15 @@ const AddChannelModal = () => {
           <Form.Group controlId="channelName">
             <Form.Label>{t('modals.channelName')}</Form.Label>
             <Form.Control
-              ref={inputRef}
-              name="name"
-              value={formik.values.name}
-              onChange={formik.handleChange}
-              isInvalid={formik.touched.name && !!formik.errors.name}
-              disabled={formik.isSubmitting}
+             ref={inputRef}
+             name="name"
+             value={formik.values.name}
+             onChange={formik.handleChange}
+             isInvalid={formik.touched.name && !!formik.errors.name}
+             disabled={formik.isSubmitting}
+             autoComplete="off"
             />
+
             <Form.Control.Feedback type="invalid">
               {formik.errors.name}
             </Form.Control.Feedback>
