@@ -7,7 +7,7 @@
   "scripts": {
     "backend": "chat-server",
     "build": "npm run build --prefix frontend",
-    "start": "npx serve -s ./frontend/dist",
+    "start": "serve -s frontend/dist -l 5173",
     "dev": "npm run dev --prefix frontend",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
