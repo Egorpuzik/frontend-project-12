@@ -6,4 +6,4 @@ build:
 	cd frontend && npm run build
 
 start:
-	cd frontend && npm run start
+	npx start-server --static ./frontend/dist
