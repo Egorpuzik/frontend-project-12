@@ -5,6 +5,7 @@
   "main": "index.js",
   "type": "commonjs",
   "scripts": {
+    "start": "npx start-server --static frontend/dist",
     "backend": "chat-server",
     "build": "npm run build --prefix frontend",
     "dev": "npm run dev --prefix frontend",
