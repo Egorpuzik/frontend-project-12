@@ -27,6 +27,7 @@
     "@hexlet/chat-server": "^1.1.9"
   },
   "devDependencies": {
+    "@vitejs/plugin-react": "^4.6.0",
     "serve": "^14.2.4",
     "vite": "^6.3.5"
   }
