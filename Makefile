@@ -3,10 +3,14 @@ install:
 	cd frontend && npm ci
 
 build:
-	rm -rf frontend/dist
+	rm -rf frontend/build
 	cd frontend && npm run build
 
+start-backend:
+	npm run backend
+
+start-frontend:
+	cd frontend && npm run dev
+
 start:
-	rm -rf frontend/dist
-	cd frontend && npm run build
-	npx start-server -s ./frontend/dist -p 5001
+	make start-backend & make start-frontend
