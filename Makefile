@@ -4,13 +4,16 @@ install:
 
 build:
 	rm -rf frontend/build
-	cd frontend && npm run build
-
-start-backend:
-	npm run backend
+	npm run build
 
 start-frontend:
 	cd frontend && npm run dev
 
+start-backend:
+	npx chat-server
+
 start:
 	make start-backend & make start-frontend
+
+lint:
+	cd frontend && npx eslint .
