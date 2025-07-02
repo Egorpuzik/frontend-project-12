@@ -1,10 +1,8 @@
-// src/utils/rollbarConfig.js
 const rollbarConfig = {
-    accessToken: process.env.REACT_APP_ROLLBAR_ACCESS_TOKEN,
-    environment: process.env.NODE_ENV || 'development',
-    captureUncaught: true,
-    captureUnhandledRejections: true,
-  };
-  
-  export default rollbarConfig;
-  
+  accessToken: import.meta.env.VITE_ROLLBAR_ACCESS_TOKEN,
+  environment: import.meta.env.MODE || 'development',
+  captureUncaught: true,
+  captureUnhandledRejections: true,
+};
+
+export default rollbarConfig;

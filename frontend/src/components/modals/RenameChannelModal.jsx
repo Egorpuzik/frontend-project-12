@@ -11,15 +11,13 @@ const RenameChannelModal = () => {
   const { isOpen, channel } = useSelector((state) => state.modals.renameChannelModal);
   const channels = useSelector((state) => state.channels.channels);
 
-  if (!isOpen || !channel) return null;
-
-  const existingNames = channels
-    .filter((ch) => ch.id !== channel.id)
-    .map((ch) => ch.name);
+  const existingNames = channel
+    ? channels.filter((ch) => ch.id !== channel.id).map((ch) => ch.name)
+    : [];
 
   const formik = useFormik({
     initialValues: {
-      name: channel.name,
+      name: channel ? channel.name : '',
     },
     validationSchema: Yup.object({
       name: Yup.string()
@@ -38,7 +36,12 @@ const RenameChannelModal = () => {
         resetForm();
       });
     },
+    enableReinitialize: true, 
   });
+
+  if (!isOpen || !channel) {
+    return null;
+  }
 
   return (
     <div className="modal">
