@@ -4,7 +4,7 @@ import * as Yup from 'yup';
 import { useDispatch, useSelector } from 'react-redux';
 import { Modal, Form, Button } from 'react-bootstrap';
 import { useTranslation } from 'react-i18next';
-import { closeModal } from '../../slices/modalsSlice.js';
+import { closeModal } from '../../store/modalsSlice.js';
 
 import { useSocket } from '../../hooks/index.js';
 import { setCurrentChannelId } from '../../slices/channelsSlice.js';
