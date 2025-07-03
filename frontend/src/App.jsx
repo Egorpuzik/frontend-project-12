@@ -1,5 +1,5 @@
 import React from 'react';
-import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import { Routes, Route } from 'react-router-dom';
 import LoginPage from './pages/LoginPage.jsx';
 import NotFoundPage from './pages/NotFoundPage.jsx';
 import HomePage from './pages/HomePage.jsx';
@@ -20,7 +20,7 @@ function App() {
     <RollbarProvider config={rollbarConfig}>
       <ErrorBoundary>
         <AuthProvider>
-          <BrowserRouter>
+          <>
             <Header />
             <ModalManager />
             <Routes>
@@ -37,9 +37,8 @@ function App() {
               <Route path="*" element={<NotFoundPage />} />
             </Routes>
 
-            {/* ✅ Контейнер для отображения уведомлений */}
             <ToastContainer position="top-right" autoClose={5000} />
-          </BrowserRouter>
+          </>
         </AuthProvider>
       </ErrorBoundary>
     </RollbarProvider>
