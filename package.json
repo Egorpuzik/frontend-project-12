@@ -25,6 +25,7 @@
   "dependencies": {
     "@fastify/jwt": "^9.1.0",
     "@hexlet/chat-server": "2.0.4",
+    "@reduxjs/toolkit": "^2.8.2",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "react-redux": "^9.2.0"
