@@ -12,17 +12,17 @@ const LoginPage = () => {
   const auth = useAuth();
 
   const validationSchema = Yup.object({
-    username: Yup.string().required(t('login.errors.required')),
-    password: Yup.string().required(t('login.errors.required')),
+    username: Yup.string().required(t('errors.required')),
+    password: Yup.string().required(t('errors.required')),
   });
 
   const handleSubmit = async (values, { setSubmitting, setErrors }) => {
     try {
       const response = await axios.post('/api/v1/login', values);
-      auth.logIn(response.data.token);
+      auth.login(response.data.token); 
       navigate('/');
     } catch {
-      setErrors({ submit: t('login.errors.authFailed') });
+      setErrors({ submit: t('errors.authFailed') });
     } finally {
       setSubmitting(false);
     }
@@ -36,7 +36,7 @@ const LoginPage = () => {
         validationSchema={validationSchema}
         onSubmit={handleSubmit}
       >
-        {({ errors }) => (
+        {({ errors, isSubmitting }) => (
           <Form>
             {errors.submit && <div className="alert alert-danger">{errors.submit}</div>}
 
@@ -52,7 +52,9 @@ const LoginPage = () => {
               <ErrorMessage name="password" component="div" className="text-danger" />
             </div>
 
-            <button type="submit" className="btn btn-primary">{t('login.submit')}</button>
+            <button type="submit" className="btn btn-primary" disabled={isSubmitting}>
+              {t('login.submit')}
+            </button>
 
             <p className="mt-3">
               {t('login.noAccount')} <Link to="/signup">{t('login.signup')}</Link>
