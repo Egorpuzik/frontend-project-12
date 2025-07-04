@@ -26,8 +26,10 @@
     "@fastify/jwt": "^9.1.0",
     "@hexlet/chat-server": "2.0.4",
     "@reduxjs/toolkit": "^2.8.2",
+    "i18next": "^25.3.0",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
+    "react-i18next": "^15.6.0",
     "react-redux": "^9.2.0",
     "socket.io-client": "^4.8.1"
   },
