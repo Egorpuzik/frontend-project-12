@@ -10,7 +10,7 @@ start-frontend:
 	cd frontend && npm run dev
 
 start-backend:
-	npx chat-server
+	npm run start
 
 start:
 	make start-backend & make start-frontend
