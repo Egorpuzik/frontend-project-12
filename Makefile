@@ -10,8 +10,8 @@ start-frontend:
 	cd frontend && npm run dev
 
 start-backend:
-	npm run start
-
+	npx @hexlet/chat-server
+	
 start:
 	make start-backend & make start-frontend
 
