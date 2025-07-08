@@ -3,15 +3,15 @@ install:
 	cd frontend && npm ci
 
 build:
-	rm -rf frontend/build
-	npm run build
+	rm -rf frontend/dist
+	cd frontend && npm run build
 
 start-frontend:
 	cd frontend && npm run dev
 
 start-backend:
 	npx @hexlet/chat-server
-	
+
 start:
 	make start-backend & make start-frontend
 
