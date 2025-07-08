@@ -7,7 +7,7 @@ import { useTranslation } from 'react-i18next';
 import { closeModal } from '../../store/modalsSlice.js';
 
 import { useSocket } from '../../hooks/index.js';
-import { setCurrentChannelId } from '../../slices/channelsSlice.js';
+import { setCurrentChannelId } from '../../store/channelsSlice.js';
 import filterProfanity from '../../utils/filterProfanity.js';
 
 const AddChannelModal = () => {
