@@ -19,4 +19,4 @@ lint:
 	cd frontend && npx eslint .
 
 test:
-    npm test
+	npm test
