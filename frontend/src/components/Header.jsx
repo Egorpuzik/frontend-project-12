@@ -6,6 +6,8 @@ const Header = () => {
   const auth = useAuth();
   const navigate = useNavigate();
 
+  console.log('Header loaded, loggedIn:', auth.loggedIn); 
+
   const handleLogout = () => {
     auth.logOut(); 
     navigate('/login');
@@ -22,6 +24,7 @@ const Header = () => {
     </header>
   );
 };
+
 
 export default Header;
 
