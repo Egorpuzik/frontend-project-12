@@ -25,7 +25,7 @@ function App() {
             <ModalManager />
             <Routes>
               <Route
-                path="/"
+                path="/debug"
                 element={
                   <PrivateRoute>
                     <HomePage />

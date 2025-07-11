@@ -42,7 +42,9 @@
     "yup": "^1.6.1"
   },
   "devDependencies": {
+    "@playwright/test": "^1.54.0",
     "@vitejs/plugin-react": "^4.6.0",
+    "connect-history-api-fallback": "^2.0.0",
     "jest": "^30.0.4",
     "serve": "^14.2.4",
     "vite": "^6.3.5"

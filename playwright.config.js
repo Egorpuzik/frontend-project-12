@@ -2,12 +2,12 @@ import { defineConfig } from '@playwright/test';
 
 export default defineConfig({
   webServer: {
-    command: 'make start',
-    port: 5000,
+    command: undefined, 
+    url: 'http://localhost:5002', 
     timeout: 60000,
-    reuseExistingServer: !process.env.CI,
+    reuseExistingServer: true,
   },
   use: {
-    baseURL: 'http://localhost:5000',
+    baseURL: 'http://localhost:5002',
   },
 });
