@@ -20,3 +20,6 @@ lint:
 
 test:
 	npm test
+
+test-e2e:
+	npx playwright test
