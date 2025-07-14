@@ -5,6 +5,7 @@ export default defineConfig({
   plugins: [react()],
   server: {
     port: 5002,
+    host: '0.0.0.0', 
     hmr: {
       port: 24679,
     },
@@ -19,3 +20,4 @@ export default defineConfig({
     },
   },
 });
+
