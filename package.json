@@ -9,7 +9,8 @@
     "backend": "npx start-server -s ./frontend/dist -p 5001 -a 0.0.0.0",
     "build": "cd frontend && npm ci && npm run build",
     "dev": "npm run dev --prefix frontend",
-    "test": "jest --passWithNoTests"
+    "test": "jest --passWithNoTests",
+    "test:e2e": "playwright test"
   },
   "repository": {
     "type": "git",
