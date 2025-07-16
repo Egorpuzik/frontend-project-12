@@ -16,6 +16,7 @@ test.beforeEach(async ({ page }) => {
   await page.goto('/')
   await page.waitForTimeout(300)
 
+  await page.locator('text=Hexlet Chat').first().click()
 })
 
 test.describe('registration', () => {
