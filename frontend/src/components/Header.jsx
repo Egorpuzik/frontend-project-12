@@ -7,7 +7,7 @@ const Header = () => {
   const navigate = useNavigate();
 
   const handleLogout = () => {
-    auth.logOut();
+    auth.logout();  
     navigate('/login');
   };
 
@@ -15,7 +15,7 @@ const Header = () => {
     <header className="navbar navbar-light bg-light mb-4">
       <div className="container">
         <Link to="/" className="navbar-brand">Hexlet Chat</Link>
-        {auth.loggedIn && (
+        {auth.isAuthenticated && (
           <button type="button" className="btn btn-primary" onClick={handleLogout}>
             Выйти
           </button>
@@ -26,5 +26,3 @@ const Header = () => {
 };
 
 export default Header;
-
-
