@@ -6,25 +6,25 @@ const Header = () => {
   const auth = useAuth();
   const navigate = useNavigate();
 
-  console.log('Header loaded, loggedIn:', auth.loggedIn); 
-
   const handleLogout = () => {
-    auth.logOut(); 
+    auth.logOut();
     navigate('/login');
   };
 
   return (
-    <header className="app-header">
-      <Link to="/">Hexlet Chat</Link>
-      {auth.loggedIn && (
-        <button type="button" onClick={handleLogout}>
-          Выйти
-        </button>
-      )}
+    <header className="navbar navbar-light bg-light mb-4">
+      <div className="container">
+        <Link to="/" className="navbar-brand">Hexlet Chat</Link>
+        {auth.loggedIn && (
+          <button type="button" className="btn btn-primary" onClick={handleLogout}>
+            Выйти
+          </button>
+        )}
+      </div>
     </header>
   );
 };
 
-
 export default Header;
+
 

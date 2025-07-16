@@ -1,13 +1,16 @@
 import React from 'react';
 import { Routes, Route } from 'react-router-dom';
+
 import LoginPage from './pages/LoginPage.jsx';
-import NotFoundPage from './pages/NotFoundPage.jsx';
-import HomePage from './pages/HomePage.jsx';
 import SignupPage from './pages/SignupPage.jsx';
-import PrivateRoute from './components/PrivateRoute.jsx';
-import { AuthProvider } from './contexts/AuthContext.jsx';
-import ModalManager from './components/modals/ModalManager.jsx';
+import HomePage from './pages/HomePage.jsx';
+import NotFoundPage from './pages/NotFoundPage.jsx';
+
 import Header from './components/Header.jsx';
+import ModalManager from './components/modals/ModalManager.jsx';
+import PrivateRoute from './components/PrivateRoute.jsx';
+
+import { AuthProvider } from './contexts/AuthContext.jsx';
 
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
@@ -44,7 +47,6 @@ function App() {
               <Route path="/signup" element={<SignupPage />} />
               <Route path="*" element={<NotFoundPage />} />
             </Routes>
-
             <ToastContainer position="top-right" autoClose={5000} />
           </>
         </AuthProvider>
