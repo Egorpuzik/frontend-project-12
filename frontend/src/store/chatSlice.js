@@ -35,6 +35,7 @@ const chatSlice = createSlice({
     builder
       .addCase(fetchChatData.pending, (state) => {
         state.status = 'loading';
+        state.error = null;
       })
       .addCase(fetchChatData.fulfilled, (state, action) => {
         state.status = 'succeeded';
