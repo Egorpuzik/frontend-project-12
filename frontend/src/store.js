@@ -9,10 +9,8 @@ const store = configureStore({
     modal: modalReducer,
     channels: channelsReducer,
     messages: messagesReducer,
-    chat: chatReducer,
+    chat: chatReducer, 
   },
-  devTools: process.env.NODE_ENV !== 'production',
-  
 });
 
 export default store;
