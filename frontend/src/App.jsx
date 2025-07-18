@@ -23,32 +23,30 @@ function App() {
     <RollbarProvider config={rollbarConfig}>
       <ErrorBoundary>
         <AuthProvider>
-          <>
-            <Header />
-            <ModalManager />
-            <Routes>
-              <Route
-                path="/"
-                element={
-                  <PrivateRoute>
-                    <HomePage />
-                  </PrivateRoute>
-                }
-              />
-              <Route
-                path="/debug"
-                element={
-                  <PrivateRoute>
-                    <HomePage />
-                  </PrivateRoute>
-                }
-              />
-              <Route path="/login" element={<LoginPage />} />
-              <Route path="/signup" element={<SignupPage />} />
-              <Route path="*" element={<NotFoundPage />} />
-            </Routes>
-            <ToastContainer position="top-right" autoClose={5000} />
-          </>
+          <Header />
+          <ModalManager />
+          <Routes>
+            <Route
+              path="/"
+              element={
+                <PrivateRoute>
+                  <HomePage />
+                </PrivateRoute>
+              }
+            />
+            <Route
+              path="/debug"
+              element={
+                <PrivateRoute>
+                  <HomePage />
+                </PrivateRoute>
+              }
+            />
+            <Route path="/login" element={<LoginPage />} />
+            <Route path="/signup" element={<SignupPage />} />
+            <Route path="*" element={<NotFoundPage />} />
+          </Routes>
+          <ToastContainer position="top-right" autoClose={5000} />
         </AuthProvider>
       </ErrorBoundary>
     </RollbarProvider>

@@ -1,16 +1,24 @@
-import React, { useEffect, useState, useRef } from 'react'; 
+import React, { useEffect, useState, useRef } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { fetchChatData, newMessage } from '../store/chatSlice.js';
 import socket from '../utils/socket.js';
+import { useAuth } from '../contexts/AuthContext.jsx';
 
 const HomePage = () => {
   const dispatch = useDispatch();
-  const { channels, messages, status, error } = useSelector((state) => state.chat);
+  const { user } = useAuth();
+  const {
+    channels = [],
+    messages = [],
+    status = 'idle',
+    error = null,
+  } = useSelector((state) => state.chat || {});
+
   const [messageText, setMessageText] = useState('');
   const [disconnected, setDisconnected] = useState(false);
   const messagesEndRef = useRef(null);
 
-  const generalChannel = channels.find((c) => c.name === 'general') || channels[0];
+  const generalChannel = channels.find((c) => c.name === 'general') || channels[0] || null;
 
   useEffect(() => {
     dispatch(fetchChatData());
@@ -43,15 +51,8 @@ const HomePage = () => {
   }, [dispatch]);
 
   useEffect(() => {
-    const handleOnline = () => {
-      console.log('Интернет снова появился');
-      setDisconnected(false);
-    };
-
-    const handleOffline = () => {
-      console.warn('Интернет пропал');
-      setDisconnected(true);
-    };
+    const handleOnline = () => setDisconnected(false);
+    const handleOffline = () => setDisconnected(true);
 
     window.addEventListener('online', handleOnline);
     window.addEventListener('offline', handleOffline);
@@ -63,9 +64,7 @@ const HomePage = () => {
   }, []);
 
   useEffect(() => {
-    if (messagesEndRef.current) {
-      messagesEndRef.current.scrollIntoView({ behavior: 'smooth' });
-    }
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
 
   const handleSendMessage = (e) => {
@@ -77,7 +76,7 @@ const HomePage = () => {
       {
         body: messageText.trim(),
         channelId: generalChannel.id,
-        username: 'Аноним', 
+        username: user?.username || 'Аноним',
       },
       (response) => {
         if (response.status === 'ok') {
@@ -89,6 +88,9 @@ const HomePage = () => {
     );
   };
 
+  if (status === 'loading') return <div>Загрузка чата...</div>;
+  if (!generalChannel) return <div>Нет доступных каналов</div>;
+
   return (
     <div>
       <h1>Добро пожаловать в чат!</h1>
@@ -98,10 +100,8 @@ const HomePage = () => {
       )}
 
       {error && <div style={{ color: 'red' }}>{error}</div>}
-      {status === 'loading' && <div>Загрузка...</div>}
 
       <div style={{ display: 'flex' }}>
-        {/* Список каналов */}
         <div style={{ width: '200px', padding: '10px', borderRight: '1px solid #ccc' }}>
           <h2>Каналы</h2>
           <ul>
@@ -109,7 +109,7 @@ const HomePage = () => {
               <li
                 key={channel.id}
                 style={{
-                  fontWeight: generalChannel?.id === channel.id ? 'bold' : 'normal',
+                  fontWeight: generalChannel.id === channel.id ? 'bold' : 'normal',
                 }}
               >
                 {channel.name}
@@ -118,13 +118,12 @@ const HomePage = () => {
           </ul>
         </div>
 
-        {/* Чат */}
         <div style={{ flex: 1, padding: '10px' }}>
           <h2>Сообщения</h2>
 
           <div style={{ maxHeight: '400px', overflowY: 'auto', paddingRight: '10px' }}>
             {messages
-              .filter((m) => m.channelId === generalChannel?.id) 
+              .filter((m) => m.channelId === generalChannel.id)
               .map((message, index) => (
                 <div key={message.id || index}>
                   <strong>{message.username}:</strong> {message.body}
