@@ -41,15 +41,25 @@ const LoginPage = () => {
             {errors.submit && <div className="alert alert-danger">{errors.submit}</div>}
 
             <div className="mb-3">
-              <label htmlFor="username">{t('login.username')}</label>
-              <Field name="username" type="text" className="form-control" />
-              <ErrorMessage name="username" component="div" className="text-danger" />
+            <label htmlFor="username">{t('login.username')}</label>
+            <Field
+              id="username"
+              name="username"
+              type="text"
+              className="form-control"
+            />
+           <ErrorMessage name="username" component="div" className="text-danger" />
             </div>
 
             <div className="mb-3">
-              <label htmlFor="password">{t('login.password')}</label>
-              <Field name="password" type="password" className="form-control" />
-              <ErrorMessage name="password" component="div" className="text-danger" />
+            <label htmlFor="password">{t('login.password')}</label>
+            <Field
+              id="password"
+              name="password"
+              type="password"
+              className="form-control"
+            />
+          <ErrorMessage name="password" component="div" className="text-danger" />
             </div>
 
             <button type="submit" className="btn btn-primary" disabled={isSubmitting}>
