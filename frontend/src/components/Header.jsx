@@ -7,16 +7,25 @@ const Header = () => {
   const navigate = useNavigate();
 
   const handleLogout = () => {
-    auth.logout();  
+    auth.logout();
     navigate('/login');
   };
 
   return (
-    <header className="navbar navbar-light bg-light mb-4">
-      <div className="container">
-        <Link to="/" className="navbar-brand">Hexlet Chat</Link>
+    <header
+      className="bg-white border-bottom py-3"
+      style={{ position: 'fixed', top: 0, left: 0, width: '100%', zIndex: 1000 }}
+    >
+      <div className="container d-flex justify-content-between align-items-center">
+        <Link
+          to="/"
+          className="text-dark text-decoration-none fs-4 fw-normal"
+          style={{ userSelect: 'none' }}
+        >
+          Hexlet Chat
+        </Link>
         {auth.isAuthenticated && (
-          <button type="button" className="btn btn-primary" onClick={handleLogout}>
+          <button type="button" className="btn btn-outline-primary" onClick={handleLogout}>
             Выйти
           </button>
         )}

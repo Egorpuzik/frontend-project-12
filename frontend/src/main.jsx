@@ -4,9 +4,10 @@ import { Provider } from 'react-redux';
 import { BrowserRouter } from 'react-router-dom';
 import { store } from './store/index.js';
 import App from './App.jsx';
-import './index.css';
-import './sockets/index.js';
-import './i18n.js';
+import './index.css';          
+import 'bootstrap/dist/css/bootstrap.min.css'; 
+import './sockets/index.js';   
+import './i18n.js';            
 
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>
@@ -17,3 +18,4 @@ ReactDOM.createRoot(document.getElementById('root')).render(
     </Provider>
   </React.StrictMode>
 );
+

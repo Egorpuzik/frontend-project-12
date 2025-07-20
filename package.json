@@ -4,15 +4,15 @@
   "description": "[![Actions Status](https://github.com/Egorpuzik/frontend-project-12/actions/workflows/hexlet-check.yml/badge.svg)](https://github.com/Egorpuzik/frontend-project-12/actions)",
   "main": "index.js",
   "type": "commonjs",
-"scripts": {
-  "start": "serve -s ./frontend/dist -l 5001",
-  "start-frontend": "serve -s ./frontend/dist -l 5003",
-  "backend": "npx start-server -s ./frontend/dist -p 5001 -a 0.0.0.0",
-  "build": "cd frontend && npm ci && npm run build",
-  "dev": "npm run dev --prefix frontend",
-  "test": "jest --passWithNoTests",
-  "test:e2e": "playwright test"
-},
+  "scripts": {
+    "start": "serve -s ./frontend/dist -l 5001",
+    "start-frontend": "serve -s ./frontend/dist -l 5003",
+    "backend": "npx start-server -s ./frontend/dist -p 5001 -a 0.0.0.0",
+    "build": "cd frontend && npm ci && npm run build",
+    "dev": "npm run dev --prefix frontend",
+    "test": "jest --passWithNoTests",
+    "test:e2e": "playwright test"
+  },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/Egorpuzik/frontend-project-12.git"
@@ -30,6 +30,7 @@
     "@reduxjs/toolkit": "^2.8.2",
     "@rollbar/react": "^0.12.1",
     "axios": "^1.10.0",
+    "bootstrap": "^5.3.7",
     "formik": "^2.4.6",
     "i18next": "^25.3.0",
     "leo-profanity": "^1.8.0",

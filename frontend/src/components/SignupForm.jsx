@@ -50,52 +50,62 @@ const SignupForm = () => {
 
   return (
     <form onSubmit={formik.handleSubmit}>
-      <div className="mb-3">
-        <label htmlFor="username">Имя пользователя</label>
+      <div className="form-floating mb-3">
         <input
           id="username"
           name="username"
           type="text"
+          className={`form-control ${formik.touched.username && formik.errors.username ? 'is-invalid' : ''}`}
+          placeholder="Имя пользователя"
           onChange={formik.handleChange}
+          onBlur={formik.handleBlur}
           value={formik.values.username}
-          className="form-control"
         />
+        <label htmlFor="username">Имя пользователя</label>
         {formik.touched.username && formik.errors.username && (
-          <div className="text-danger">{formik.errors.username}</div>
+          <div className="invalid-feedback">{formik.errors.username}</div>
         )}
       </div>
 
-      <div className="mb-3">
-        <label htmlFor="password">Пароль</label>
+      <div className="form-floating mb-3">
         <input
           id="password"
           name="password"
           type="password"
+          className={`form-control ${formik.touched.password && formik.errors.password ? 'is-invalid' : ''}`}
+          placeholder="Пароль"
           onChange={formik.handleChange}
+          onBlur={formik.handleBlur}
           value={formik.values.password}
-          className="form-control"
         />
+        <label htmlFor="password">Пароль</label>
         {formik.touched.password && formik.errors.password && (
-          <div className="text-danger">{formik.errors.password}</div>
+          <div className="invalid-feedback">{formik.errors.password}</div>
         )}
       </div>
 
-      <div className="mb-3">
-        <label htmlFor="confirmPassword">Подтвердите пароль</label>
+      <div className="form-floating mb-4">
         <input
           id="confirmPassword"
           name="confirmPassword"
           type="password"
+          className={`form-control ${formik.touched.confirmPassword && formik.errors.confirmPassword ? 'is-invalid' : ''}`}
+          placeholder="Подтвердите пароль"
           onChange={formik.handleChange}
+          onBlur={formik.handleBlur}
           value={formik.values.confirmPassword}
-          className="form-control"
         />
+        <label htmlFor="confirmPassword">Подтвердите пароль</label>
         {formik.touched.confirmPassword && formik.errors.confirmPassword && (
-          <div className="text-danger">{formik.errors.confirmPassword}</div>
+          <div className="invalid-feedback">{formik.errors.confirmPassword}</div>
         )}
       </div>
 
-      <button type="submit" className="btn btn-primary" disabled={formik.isSubmitting}>
+      <button
+        type="submit"
+        className="btn btn-outline-primary w-100"
+        disabled={formik.isSubmitting}
+        >
         Зарегистрироваться
       </button>
     </form>

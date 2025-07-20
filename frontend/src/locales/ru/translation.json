@@ -8,7 +8,7 @@
       "signup": "Регистрация"
     },
     "signup": {
-      "header": "Войти",
+      "header": "Регистрация",
       "username": "Ваш ник",
       "password": "Пароль",
       "confirmPassword": "Подтвердите пароль",
