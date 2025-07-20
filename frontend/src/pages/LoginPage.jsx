@@ -18,7 +18,13 @@ const LoginPage = () => {
     password: Yup.string().required(t('errors.required')),
   });
 
-  const handleSubmit = async (values, { setSubmitting, setErrors }) => {
+  const handleSubmit = async (values, { setSubmitting, setErrors, validateForm }) => {
+    const errors = await validateForm();
+    if (Object.keys(errors).length > 0) {
+      setSubmitting(false);
+      return; // Не отправлять форму, если есть ошибки
+    }
+
     try {
       const response = await axios.post('/api/v1/login', values);
       auth.login(response.data.token);
@@ -35,13 +41,16 @@ const LoginPage = () => {
       className="container d-flex flex-column align-items-center pt-5"
       style={{ marginTop: '250px', minHeight: '100vh' }}
     >
-      {/* Основной блок с формой и картинкой */}
       <div
-        className="card shadow p-4 d-flex flex-column"
+        className="card shadow d-flex flex-column"
         style={{ width: '750px', height: '450px' }}
       >
-        <div className="row g-3 align-items-center flex-grow-1">
-          {/* Картинка слева */}
+        {/* Верхняя часть: картинка и форма */}
+        <div
+          className="row g-3 align-items-center flex-grow-1 px-4 pt-2"
+          style={{ height: '390px', overflow: 'auto' }}
+        >
+          {/* Картинка */}
           <div className="col-md-5 text-center">
             <img
               src={loginImage}
@@ -51,22 +60,30 @@ const LoginPage = () => {
             />
           </div>
 
-          {/* Правая часть с заголовком и формой */}
-          <div className="col-md-7 d-flex flex-column">
-            <h1 className="mb-4 text-center">{t('login.header')}</h1>
+          {/* Форма */}
+          <div className="col-md-7 d-flex flex-column justify-content-start align-items-center">
+            <h1 className="mb-3 mt-1 text-center" style={{ fontSize: '1.8rem' }}>
+              {t('login.header')}
+            </h1>
 
             <Formik
               initialValues={{ username: '', password: '' }}
               validationSchema={validationSchema}
               onSubmit={handleSubmit}
             >
-              {({ errors, touched, isSubmitting }) => (
-                <Form className="flex-grow-1 d-flex flex-column justify-content-start">
+              {({ errors, touched, isSubmitting, setErrors }) => (
+                <Form
+                  className="w-100 d-flex flex-column align-items-center"
+                  onChange={() => {
+                    // Удаляет ошибку submit при вводе
+                    if (errors.submit) setErrors({ ...errors, submit: undefined });
+                  }}
+                >
                   {errors.submit && (
-                    <div className="alert alert-danger">{errors.submit}</div>
+                    <div className="alert alert-danger w-75">{errors.submit}</div>
                   )}
 
-                  <div className="form-floating mb-3">
+                  <div className="form-floating mb-2 w-75" style={{ maxWidth: '350px' }}>
                     <Field
                       id="username"
                       name="username"
@@ -84,7 +101,7 @@ const LoginPage = () => {
                     />
                   </div>
 
-                  <div className="form-floating mb-3">
+                  <div className="form-floating mb-2 w-75" style={{ maxWidth: '350px' }}>
                     <Field
                       id="password"
                       name="password"
@@ -104,9 +121,9 @@ const LoginPage = () => {
 
                   <button
                     type="submit"
-                    className="btn btn-outline-primary w-100 mt-auto"
+                    className="btn btn-outline-primary w-75 mt-2"
                     disabled={isSubmitting}
-                    style={{ fontWeight: '600' }}
+                    style={{ fontWeight: '600', maxWidth: '350px' }}
                   >
                     {t('login.submit')}
                   </button>
@@ -116,18 +133,19 @@ const LoginPage = () => {
           </div>
         </div>
 
-        {/* Нижняя рамка с регистрацией, сливается с основной рамкой */}
+        {/* Нижняя рамка с регистрацией — внутри карточки */}
         <div
           className="border-top d-flex justify-content-center align-items-center"
           style={{
             height: '60px',
             backgroundColor: '#f8f9fa',
             borderRadius: '0 0 0.375rem 0.375rem',
+            padding: '0 15px',
           }}
         >
-          <p className="mb-0">
+          <p className="mb-0 text-center w-100 text-dark">
             {t('login.noAccount')}{' '}
-            <Link to="/signup" className="text-decoration-none fw-semibold">
+            <Link to="/signup" className="fw-semibold text-decoration-underline">
               {t('login.signup')}
             </Link>
           </p>
@@ -138,4 +156,3 @@ const LoginPage = () => {
 };
 
 export default LoginPage;
-
