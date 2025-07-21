@@ -22,7 +22,7 @@ const LoginPage = () => {
     const errors = await validateForm();
     if (Object.keys(errors).length > 0) {
       setSubmitting(false);
-      return; // Не отправлять форму, если есть ошибки
+      return;
     }
 
     try {
@@ -45,7 +45,7 @@ const LoginPage = () => {
         className="card shadow d-flex flex-column"
         style={{ width: '750px', height: '450px' }}
       >
-        {/* Верхняя часть: картинка и форма */}
+        {/* Верхняя часть */}
         <div
           className="row g-3 align-items-center flex-grow-1 px-4 pt-2"
           style={{ height: '390px', overflow: 'auto' }}
@@ -70,29 +70,28 @@ const LoginPage = () => {
               initialValues={{ username: '', password: '' }}
               validationSchema={validationSchema}
               onSubmit={handleSubmit}
+              validateOnBlur={false}
+              validateOnChange={false}
             >
-              {({ errors, touched, isSubmitting, setErrors }) => (
-                <Form
-                  className="w-100 d-flex flex-column align-items-center"
-                  onChange={() => {
-                    // Удаляет ошибку submit при вводе
-                    if (errors.submit) setErrors({ ...errors, submit: undefined });
-                  }}
-                >
+              {({ errors, isSubmitting }) => (
+                <Form className="w-100 d-flex flex-column align-items-center">
                   {errors.submit && (
                     <div className="alert alert-danger w-75">{errors.submit}</div>
                   )}
 
                   <div className="form-floating mb-2 w-75" style={{ maxWidth: '350px' }}>
-                    <Field
-                      id="username"
-                      name="username"
-                      type="text"
-                      placeholder={t('login.username')}
-                      className={`form-control ${
-                        touched.username && errors.username ? 'is-invalid' : ''
-                      }`}
-                    />
+                    <Field name="username">
+                      {({ field }) => (
+                        <input
+                          {...field}
+                          id="username"
+                          type="text"
+                          placeholder={t('login.username')}
+                          required
+                          className={`form-control ${errors.username ? 'is-invalid' : ''}`}
+                        />
+                      )}
+                    </Field>
                     <label htmlFor="username">{t('login.username')}</label>
                     <ErrorMessage
                       name="username"
@@ -102,15 +101,18 @@ const LoginPage = () => {
                   </div>
 
                   <div className="form-floating mb-2 w-75" style={{ maxWidth: '350px' }}>
-                    <Field
-                      id="password"
-                      name="password"
-                      type="password"
-                      placeholder={t('login.password')}
-                      className={`form-control ${
-                        touched.password && errors.password ? 'is-invalid' : ''
-                      }`}
-                    />
+                    <Field name="password">
+                      {({ field }) => (
+                        <input
+                          {...field}
+                          id="password"
+                          type="password"
+                          placeholder={t('login.password')}
+                          required
+                          className={`form-control ${errors.password ? 'is-invalid' : ''}`}
+                        />
+                      )}
+                    </Field>
                     <label htmlFor="password">{t('login.password')}</label>
                     <ErrorMessage
                       name="password"
@@ -133,7 +135,7 @@ const LoginPage = () => {
           </div>
         </div>
 
-        {/* Нижняя рамка с регистрацией — внутри карточки */}
+        {/* Нижняя часть с регистрацией */}
         <div
           className="border-top d-flex justify-content-center align-items-center"
           style={{

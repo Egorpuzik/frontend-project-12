@@ -55,6 +55,7 @@ const SignupForm = () => {
           id="username"
           name="username"
           type="text"
+          required
           className={`form-control ${formik.touched.username && formik.errors.username ? 'is-invalid' : ''}`}
           placeholder="Имя пользователя"
           onChange={formik.handleChange}
