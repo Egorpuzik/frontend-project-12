@@ -19,7 +19,7 @@ const Header = () => {
       <div className="container d-flex justify-content-between align-items-center">
         <Link
           to="/"
-          className="text-dark text-decoration-none fs-4 fw-normal"
+          className="text-dark text-decoration-none fs-5 fw-normal"
           style={{ userSelect: 'none' }}
         >
           Hexlet Chat

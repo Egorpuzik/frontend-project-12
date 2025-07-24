@@ -9,7 +9,6 @@ const SignupPage = () => {
 
   return (
     <div className="min-vh-100 d-flex flex-column bg-light">
-      {/* Верхняя полоса с Hexlet Chat */}
       <div className="bg-white w-100 border-bottom py-2 px-4 d-flex align-items-center">
         <Link
           to="/"
@@ -20,14 +19,12 @@ const SignupPage = () => {
         </Link>
       </div>
 
-      {/* Контейнер для формы */}
       <div className="flex-grow-1 d-flex justify-content-center align-items-center px-3 py-5">
         <div
           className="card shadow p-4 d-flex flex-column justify-content-center"
-          style={{ width: '750px', height: '450px' }}
+          style={{ width: '750px', height: '480px' }}
         >
           <div className="row g-0 align-items-center h-100">
-            {/* Левая часть с круглой картинкой */}
             <div className="col-md-5 text-center mb-4 mb-md-0">
               <img
                 src={signupImage}
@@ -37,10 +34,16 @@ const SignupPage = () => {
               />
             </div>
 
-            {/* Правая часть с формой */}
-            <div className="col-md-7">
-              <h1 className="mb-4 fs-4">{t('signup.header')}</h1>
-              <SignupForm />
+            <div className="col-md-7 d-flex flex-column align-items-center">
+              {/* Центрированный и жирный заголовок */}
+              <h1 className="mb-4 fw-bold text-center" style={{ fontSize: '3rem', fontWeight: '400' }}>
+                {t('signup.header')}
+              </h1>
+
+              {/* Обертка формы с фиксированной шириной */}
+              <div style={{ width: '100%', maxWidth: '320px' }}>
+                <SignupForm />
+              </div>
             </div>
           </div>
         </div>
