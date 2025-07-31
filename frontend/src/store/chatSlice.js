@@ -6,12 +6,22 @@ export const fetchChatData = createAsyncThunk(
   async (_, { rejectWithValue }) => {
     try {
       const token = localStorage.getItem('token');
-      const response = await axios.get('/api/v1/data', {
+      const config = {
         headers: {
           Authorization: `Bearer ${token}`,
         },
-      });
-      return response.data;
+      };
+
+      const [channelsRes, messagesRes] = await Promise.all([
+        axios.get('/api/v1/channels', config),
+        axios.get('/api/v1/messages', config),
+      ]);
+
+      return {
+        channels: channelsRes.data,
+        messages: messagesRes.data,
+        currentChannelId: channelsRes.data[0]?.id || null,
+      };
     } catch (error) {
       return rejectWithValue(error.response?.data || 'Ошибка загрузки');
     }
