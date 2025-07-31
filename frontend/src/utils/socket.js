@@ -1,12 +1,40 @@
 import { io } from 'socket.io-client';
 
-const token = localStorage.getItem('token');
+let socket = null;
 
-const socket = io('/', {
-  auth: {
-    token,
-  },
-  autoConnect: true,
-});
+export const initSocket = () => {
+  const token = localStorage.getItem('token');
 
-export default socket;
+  if (socket) {
+    socket.disconnect();
+  }
+
+  socket = io('/', {
+    auth: { token },
+    autoConnect: true,
+    reconnection: true,
+    reconnectionAttempts: 5,
+    reconnectionDelay: 1000,
+  });
+
+  socket.on('connect_error', (err) => {
+    console.error('Ошибка подключения к сокету:', err.message);
+  });
+
+  socket.on('connect', () => {
+    console.log('✅ Socket подключен:', socket.id);
+  });
+
+  socket.on('disconnect', (reason) => {
+    console.warn('⚠️ Socket отключён:', reason);
+  });
+};
+
+export const getSocket = () => socket;
+export const disconnectSocket = () => {
+  if (socket) {
+    socket.disconnect();
+    console.log('Socket отключён вручную');
+  }
+};
+

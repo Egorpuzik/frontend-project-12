@@ -2,6 +2,7 @@ import React, { createContext, useState, useEffect, useContext } from 'react';
 import axios from 'axios';
 import { useDispatch } from 'react-redux';
 import { fetchChatData } from '../store/chatSlice.js';
+import { initSocket, disconnectSocket } from '../utils/socket.js'; 
 
 export const AuthContext = createContext();
 
@@ -14,7 +15,8 @@ export const AuthProvider = ({ children }) => {
     if (savedToken) {
       setToken(savedToken);
       axios.defaults.headers.common.Authorization = `Bearer ${savedToken}`;
-      dispatch(fetchChatData()); 
+      initSocket(); 
+      dispatch(fetchChatData());
     }
   }, [dispatch]);
 
@@ -22,13 +24,15 @@ export const AuthProvider = ({ children }) => {
     localStorage.setItem('token', newToken);
     setToken(newToken);
     axios.defaults.headers.common.Authorization = `Bearer ${newToken}`;
-    dispatch(fetchChatData()); 
+    initSocket(); 
+    dispatch(fetchChatData());
   };
 
   const logout = () => {
     localStorage.removeItem('token');
     setToken(null);
     delete axios.defaults.headers.common.Authorization;
+    disconnectSocket(); 
   };
 
   const isAuthenticated = Boolean(token);
@@ -41,4 +45,3 @@ export const AuthProvider = ({ children }) => {
 };
 
 export const useAuth = () => useContext(AuthContext);
-
