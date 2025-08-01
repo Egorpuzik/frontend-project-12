@@ -1,8 +1,7 @@
 import { useEffect } from 'react';
 import { useDispatch } from 'react-redux';
 import socket from '../socket';
-import { newMessage, setCurrentChannelId } from '../store/chatSlice';
-import { addChannel, removeChannel, renameChannel } from '../store/chatSlice';
+import { newMessage, addChannel, removeChannel, renameChannel } from '../store/chatSlice';
 
 const useChatSocket = () => {
   const dispatch = useDispatch();

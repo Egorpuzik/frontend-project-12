@@ -11,8 +11,7 @@ const HomePage = () => {
     channels = [],
     messages = [],
     status = 'idle',
-    error = null,
-  } = useSelector((state) => state.chat || {});
+  } = useSelector((state) => state.chat || {}); 
 
   const [messageText, setMessageText] = useState('');
   const [disconnected, setDisconnected] = useState(false);
@@ -114,8 +113,8 @@ const HomePage = () => {
         <div style={{ flex: 1, overflowY: 'auto', padding: '15px', background: '#fff' }}>
           {messages
             .filter((m) => m.channelId === generalChannel.id)
-            .map((message, index) => (
-              <div key={message.id || index} style={{ marginBottom: '10px' }}>
+            .map((message) => (
+              <div key={message.id} style={{ marginBottom: '10px' }}>
                 <strong>{message.username}:</strong> {message.body}
               </div>
             ))}
