@@ -7,21 +7,22 @@ import { useAuth } from '../contexts/AuthContext.jsx';
 const HomePage = () => {
   const dispatch = useDispatch();
   const { user } = useAuth();
-  const {
-    channels = [],
-    messages = [],
-    status = 'idle',
-  } = useSelector((state) => state.chat || {}); 
+  const { channels = [], messages = [], status = 'idle' } = useSelector((state) => state.chat || {});
 
   const [messageText, setMessageText] = useState('');
   const [disconnected, setDisconnected] = useState(false);
+  const [currentChannel, setCurrentChannel] = useState(null);
   const messagesEndRef = useRef(null);
-
-  const generalChannel = channels.find((c) => c.name === 'general') || channels[0] || null;
 
   useEffect(() => {
     dispatch(fetchChatData());
   }, [dispatch]);
+
+  useEffect(() => {
+    if (channels.length > 0 && !currentChannel) {
+      setCurrentChannel(channels.find((c) => c.name === 'general') || channels[0]);
+    }
+  }, [channels, currentChannel]);
 
   useEffect(() => {
     initSocket();
@@ -55,18 +56,18 @@ const HomePage = () => {
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [messages]);
+  }, [messages, currentChannel]);
 
   const handleSendMessage = (e) => {
     e.preventDefault();
     const socket = getSocket();
-    if (!socket || !messageText.trim() || !generalChannel) return;
+    if (!socket || !messageText.trim() || !currentChannel) return;
 
     socket.emit(
       'newMessage',
       {
         body: messageText.trim(),
-        channelId: generalChannel.id,
+        channelId: currentChannel.id,
         username: user?.username,
       },
       (response) => {
@@ -78,7 +79,7 @@ const HomePage = () => {
   };
 
   if (status === 'loading') return <div>Загрузка чата...</div>;
-  if (!generalChannel) return <div>Нет доступных каналов</div>;
+  if (!currentChannel) return <div>Нет доступных каналов</div>;
 
   return (
     <div style={{ display: 'flex', height: '100vh' }}>
@@ -89,12 +90,15 @@ const HomePage = () => {
           {channels.map((channel) => (
             <li
               key={channel.id}
+              onClick={() => setCurrentChannel(channel)}
               style={{
-                padding: '10px',
                 cursor: 'pointer',
-                background: generalChannel.id === channel.id ? '#e9ecef' : 'transparent',
+                padding: '8px 12px',
+                textAlign: 'left',
+                background: currentChannel.id === channel.id ? '#e9ecef' : 'transparent',
                 borderRadius: '5px',
-                marginBottom: '5px',
+                marginBottom: '3px',
+                fontWeight: currentChannel.id === channel.id ? 'bold' : 'normal',
               }}
             >
               #{channel.name}
@@ -106,13 +110,13 @@ const HomePage = () => {
       {/* ПРАВАЯ ПАНЕЛЬ */}
       <div style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
         <div style={{ padding: '15px', borderBottom: '1px solid #ddd', fontWeight: 'bold' }}>
-          #{generalChannel.name}
+          #{currentChannel.name}
         </div>
 
         {/* СООБЩЕНИЯ */}
         <div style={{ flex: 1, overflowY: 'auto', padding: '15px', background: '#fff' }}>
           {messages
-            .filter((m) => m.channelId === generalChannel.id)
+            .filter((m) => m.channelId === currentChannel.id)
             .map((message) => (
               <div key={message.id} style={{ marginBottom: '10px' }}>
                 <strong>{message.username}:</strong> {message.body}
@@ -133,7 +137,7 @@ const HomePage = () => {
           />
           <button
             type="submit"
-            disabled={disconnected || !generalChannel}
+            disabled={disconnected || !currentChannel}
             style={{ padding: '10px 20px', background: '#0d6efd', color: '#fff', border: 'none', borderRadius: '5px', cursor: 'pointer' }}
           >
             ➤
