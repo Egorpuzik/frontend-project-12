@@ -38,7 +38,7 @@ const SignupForm = () => {
         navigate('/');
       } catch (err) {
         if (err.response?.status === 409) {
-          setErrors({ username: 'Пользователь уже существует' });
+          setErrors({ username: 'Такой пользователь уже существует' });
         } else {
           console.error(err);
         }

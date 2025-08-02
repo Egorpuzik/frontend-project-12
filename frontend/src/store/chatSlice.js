@@ -12,6 +12,7 @@ export const fetchChatData = createAsyncThunk(
         },
       };
 
+      // Загружаем каналы и сообщения
       const [channelsRes, messagesRes] = await Promise.all([
         axios.get('/api/v1/channels', config),
         axios.get('/api/v1/messages', config),
