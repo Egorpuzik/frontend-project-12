@@ -3,6 +3,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { fetchChatData, newMessage, addChannel, removeChannel, renameChannel } from '../store/chatSlice.js';
 import { initSocket, getSocket } from '../utils/socket.js';
 import { useAuth } from '../contexts/AuthContext.jsx';
+import './HomePage.css';
 
 const HomePage = () => {
   const dispatch = useDispatch();
@@ -14,7 +15,9 @@ const HomePage = () => {
   const [activeChannel, setActiveChannel] = useState(null);
   const [showModal, setShowModal] = useState(false);
   const [newChannelName, setNewChannelName] = useState('');
+
   const messagesEndRef = useRef(null);
+  const messageInputRef = useRef(null);
 
   useEffect(() => {
     dispatch(fetchChatData());
@@ -37,14 +40,19 @@ const HomePage = () => {
 
   useEffect(() => {
     if (!activeChannel && channels.length > 0) {
-      const generalChannel = channels.find((c) => c.name === 'general') || channels[0];
-      setActiveChannel(generalChannel);
+      const general = channels.find((c) => c.name === 'general') || channels[0];
+      setActiveChannel(general);
     }
   }, [channels, activeChannel]);
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages, activeChannel]);
+
+  useEffect(() => {
+    messageInputRef.current?.focus();
+  }, [activeChannel]);
+
 
   const handleSendMessage = (e) => {
     e.preventDefault();
@@ -53,13 +61,12 @@ const HomePage = () => {
 
     socket.emit(
       'newMessage',
-      {
-        body: messageText.trim(),
-        channelId: activeChannel.id,
-        username: user?.username,
-      },
+      { body: messageText.trim(), channelId: activeChannel.id, username: user?.username },
       (response) => {
-        if (response.status === 'ok') setMessageText('');
+        if (response.status === 'ok') {
+          setMessageText('');
+          messageInputRef.current?.focus();
+        }
       }
     );
   };
@@ -77,66 +84,29 @@ const HomePage = () => {
     });
   };
 
-  if (status !== 'succeeded' || channels.length === 0) {
-    return <div>Загрузка чата...</div>;
+  if (status !== 'succeeded' || channels.length === 0 || !activeChannel) {
+    return <div className="loading">Загрузка чата...</div>;
   }
 
   return (
-    <div style={{ display: 'flex', height: '100vh' }}>
+    <div className="chat-container">
       {/* ЛЕВАЯ ПАНЕЛЬ */}
-      <div
-        style={{
-          width: '250px',
-          background: '#f8f9fa',
-          borderRight: '1px solid #ddd',
-          display: 'flex',
-          flexDirection: 'column',
-        }}
-      >
-        <div
-          style={{
-            padding: '15px',
-            fontWeight: 'bold',
-            borderBottom: '1px solid #ddd',
-            display: 'flex',
-            justifyContent: 'space-between',
-            alignItems: 'center',
-          }}
-        >
+      <div className="sidebar">
+        <div className="sidebar-header">
           <span>Каналы</span>
-          <button
-            onClick={() => setShowModal(true)}
-            style={{
-              border: 'none',
-              background: 'transparent',
-              fontSize: '18px',
-              cursor: 'pointer',
-            }}
-            aria-label="Добавить канал"
-          >
-            ＋
+          <button onClick={() => setShowModal(true)} className="add-channel-btn" aria-label="Добавить канал">
+            +
           </button>
         </div>
-
-        <ul style={{ listStyle: 'none', padding: '10px', margin: 0, flex: 1 }}>
+        <ul className="channel-list">
           {channels.map((channel) => (
-            <li key={channel.id} style={{ marginBottom: '5px' }}>
+            <li key={channel.id}>
               <button
                 type="button"
                 onClick={() => setActiveChannel(channel)}
-                style={{
-                  width: '100%',
-                  textAlign: 'left',
-                  padding: '10px',
-                  background:
-                    activeChannel?.id === channel.id ? '#495057' : 'transparent',
-                  color: activeChannel?.id === channel.id ? '#fff' : '#000',
-                  border: 'none',
-                  borderRadius: '5px',
-                  cursor: 'pointer',
-                }}
+                className={`channel-btn ${activeChannel?.id === channel.id ? 'active' : ''}`}
               >
-                {channel.name}
+                #{channel.name}
               </button>
             </li>
           ))}
@@ -144,60 +114,35 @@ const HomePage = () => {
       </div>
 
       {/* ПРАВАЯ ПАНЕЛЬ */}
-      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', background: '#fff' }}>
-        <div style={{ padding: '15px', borderBottom: '1px solid #ddd', fontWeight: 'bold' }}>
-          #{activeChannel?.name}{' '}
-          <span style={{ color: '#6c757d', fontWeight: 'normal', marginLeft: '10px' }}>
-            {messages.filter((m) => m.channelId === activeChannel?.id).length} сообщений
+      <div className="chat-main">
+        <div className="chat-header">
+          #{activeChannel.name}
+          <span className="message-count">
+            {messages.filter((m) => m.channelId === activeChannel.id).length} сообщений
           </span>
         </div>
 
-        <div style={{ flex: 1, overflowY: 'auto', padding: '15px' }}>
+        <div className="message-list">
           {messages
-            .filter((m) => m.channelId === activeChannel?.id)
-            .map((message) => (
-              <div key={message.id} style={{ marginBottom: '10px' }}>
-                <strong>{message.username}:</strong> {message.body}
+            .filter((m) => m.channelId === activeChannel.id)
+            .map((msg) => (
+              <div key={msg.id} className="message">
+                <strong>{msg.username}:</strong> {msg.body}
               </div>
             ))}
           <div ref={messagesEndRef} />
         </div>
 
-        <form
-          onSubmit={handleSendMessage}
-          style={{
-            display: 'flex',
-            padding: '10px',
-            borderTop: '1px solid #ddd',
-            background: '#f8f9fa',
-          }}
-        >
+        <form onSubmit={handleSendMessage} className="message-form">
           <input
+            ref={messageInputRef}
             type="text"
             value={messageText}
             onChange={(e) => setMessageText(e.target.value)}
             placeholder="Введите сообщение..."
-            style={{
-              flex: 1,
-              marginRight: '10px',
-              padding: '10px',
-              border: '1px solid #ccc',
-              borderRadius: '5px',
-            }}
             disabled={disconnected}
           />
-          <button
-            type="submit"
-            disabled={disconnected || !activeChannel}
-            style={{
-              padding: '10px 20px',
-              background: '#0d6efd',
-              color: '#fff',
-              border: 'none',
-              borderRadius: '5px',
-              cursor: 'pointer',
-            }}
-          >
+          <button type="submit" disabled={disconnected || !activeChannel}>
             ➤
           </button>
         </form>
@@ -205,20 +150,8 @@ const HomePage = () => {
 
       {/* МОДАЛКА */}
       {showModal && (
-        <div
-          style={{
-            position: 'fixed',
-            top: 0,
-            left: 0,
-            right: 0,
-            bottom: 0,
-            background: 'rgba(0,0,0,0.5)',
-            display: 'flex',
-            justifyContent: 'center',
-            alignItems: 'center',
-          }}
-        >
-          <div style={{ background: '#fff', padding: '20px', borderRadius: '8px', width: '400px' }}>
+        <div className="modal-overlay">
+          <div className="modal">
             <h3>Добавить канал</h3>
             <form onSubmit={handleAddChannel}>
               <label htmlFor="newChannel">Имя канала</label>
@@ -228,39 +161,12 @@ const HomePage = () => {
                 value={newChannelName}
                 onChange={(e) => setNewChannelName(e.target.value)}
                 placeholder="Введите имя канала"
-                style={{
-                  width: '100%',
-                  margin: '10px 0',
-                  padding: '10px',
-                  border: '1px solid #ccc',
-                  borderRadius: '5px',
-                }}
               />
-              <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '10px' }}>
-                <button
-                  type="button"
-                  onClick={() => setShowModal(false)}
-                  style={{
-                    marginRight: '10px',
-                    padding: '8px 15px',
-                    border: 'none',
-                    background: '#6c757d',
-                    color: '#fff',
-                    borderRadius: '5px',
-                  }}
-                >
+              <div className="modal-actions">
+                <button type="button" onClick={() => setShowModal(false)} className="btn-cancel">
                   Отменить
                 </button>
-                <button
-                  type="submit"
-                  style={{
-                    padding: '8px 15px',
-                    border: 'none',
-                    background: '#0d6efd',
-                    color: '#fff',
-                    borderRadius: '5px',
-                  }}
-                >
+                <button type="submit" className="btn-submit">
                   Отправить
                 </button>
               </div>
