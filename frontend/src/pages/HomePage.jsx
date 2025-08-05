@@ -53,7 +53,6 @@ const HomePage = () => {
     messageInputRef.current?.focus();
   }, [activeChannel]);
 
-
   const handleSendMessage = (e) => {
     e.preventDefault();
     const socket = getSocket();
@@ -84,14 +83,14 @@ const HomePage = () => {
     });
   };
 
-  if (status !== 'succeeded' || channels.length === 0 || !activeChannel) {
+  if (status === 'loading') {
     return <div className="loading">Загрузка чата...</div>;
   }
 
   return (
     <div className="chat-container">
       {/* ЛЕВАЯ ПАНЕЛЬ */}
-      <div className="sidebar">
+      <div className="sidebar" style={{ zIndex: 2 }}>
         <div className="sidebar-header">
           <span>Каналы</span>
           <button onClick={() => setShowModal(true)} className="add-channel-btn" aria-label="Добавить канал">
@@ -103,10 +102,11 @@ const HomePage = () => {
             <li key={channel.id}>
               <button
                 type="button"
+                aria-label={channel.name}
                 onClick={() => setActiveChannel(channel)}
                 className={`channel-btn ${activeChannel?.id === channel.id ? 'active' : ''}`}
               >
-                #{channel.name}
+                <span>#</span> {channel.name}
               </button>
             </li>
           ))}
@@ -114,39 +114,44 @@ const HomePage = () => {
       </div>
 
       {/* ПРАВАЯ ПАНЕЛЬ */}
-      <div className="chat-main">
-        <div className="chat-header">
-          #{activeChannel.name}
-          <span className="message-count">
-            {messages.filter((m) => m.channelId === activeChannel.id).length} сообщений
-          </span>
-        </div>
+      {activeChannel ? (
+        <div className="chat-main">
+          <div className="chat-header">
+            <span>#{activeChannel.name}</span>
+            <span className="message-count">
+              {messages.filter((m) => m.channelId === activeChannel.id).length} сообщений
+            </span>
+          </div>
 
-        <div className="message-list">
-          {messages
-            .filter((m) => m.channelId === activeChannel.id)
-            .map((msg) => (
-              <div key={msg.id} className="message">
-                <strong>{msg.username}:</strong> {msg.body}
-              </div>
-            ))}
-          <div ref={messagesEndRef} />
-        </div>
+          <div className="message-list">
+            {messages
+              .filter((m) => m.channelId === activeChannel.id)
+              .map((msg) => (
+                <div key={msg.id} className="message">
+                  <strong>{msg.username}:</strong> {msg.body}
+                </div>
+              ))}
+            <div ref={messagesEndRef} />
+          </div>
 
-        <form onSubmit={handleSendMessage} className="message-form">
-          <input
-            ref={messageInputRef}
-            type="text"
-            value={messageText}
-            onChange={(e) => setMessageText(e.target.value)}
-            placeholder="Введите сообщение..."
-            disabled={disconnected}
-          />
-          <button type="submit" disabled={disconnected || !activeChannel}>
-            ➤
-          </button>
-        </form>
-      </div>
+          <form onSubmit={handleSendMessage} className="message-form">
+            <input
+              ref={messageInputRef}
+              type="text"
+              aria-label="Новое сообщение"
+              value={messageText}
+              onChange={(e) => setMessageText(e.target.value)}
+              placeholder="Введите сообщение..."
+              disabled={disconnected}
+            />
+            <button type="submit" disabled={disconnected || !activeChannel}>
+              ➤
+            </button>
+          </form>
+        </div>
+      ) : (
+        <div className="chat-placeholder">Выберите канал</div>
+      )}
 
       {/* МОДАЛКА */}
       {showModal && (
