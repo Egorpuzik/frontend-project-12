@@ -6,24 +6,33 @@ export const fetchChatData = createAsyncThunk(
   async (_, { rejectWithValue }) => {
     try {
       const token = localStorage.getItem('token');
+
+      if (!token) {
+        console.warn('⚠️ fetchChatData: отсутствует токен авторизации');
+        return rejectWithValue('Нет токена авторизации');
+      }
+
       const config = {
         headers: {
           Authorization: `Bearer ${token}`,
         },
       };
 
-      // Загружаем каналы и сообщения
       const [channelsRes, messagesRes] = await Promise.all([
         axios.get('/api/v1/channels', config),
         axios.get('/api/v1/messages', config),
       ]);
 
+      const channels = channelsRes.data;
+      const messages = messagesRes.data;
+
       return {
-        channels: channelsRes.data,
-        messages: messagesRes.data,
-        currentChannelId: channelsRes.data[0]?.id || null,
+        channels,
+        messages,
+        currentChannelId: channels.length > 0 ? channels[0].id : null,
       };
     } catch (error) {
+      console.error('❌ Ошибка fetchChatData:', error.response?.data || error.message);
       return rejectWithValue(error.response?.data || 'Ошибка загрузки');
     }
   }
@@ -86,3 +95,4 @@ export const { newMessage, setCurrentChannelId, addChannel, removeChannel, renam
   chatSlice.actions;
 
 export default chatSlice.reducer;
+

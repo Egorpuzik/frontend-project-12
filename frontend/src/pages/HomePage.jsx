@@ -1,13 +1,13 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { fetchChatData, newMessage, addChannel, removeChannel, renameChannel } from '../store/chatSlice.js';
+import { newMessage, addChannel, removeChannel, renameChannel } from '../store/chatSlice.js';
 import { initSocket, getSocket } from '../utils/socket.js';
 import { useAuth } from '../contexts/AuthContext.jsx';
 import './HomePage.css';
 
 const HomePage = () => {
   const dispatch = useDispatch();
-  const { user } = useAuth();
+  const { user, token, isAuthenticated } = useAuth();
   const { channels = [], messages = [], status = 'idle' } = useSelector((state) => state.chat || {});
 
   const [messageText, setMessageText] = useState('');
@@ -20,10 +20,8 @@ const HomePage = () => {
   const messageInputRef = useRef(null);
 
   useEffect(() => {
-    dispatch(fetchChatData());
-  }, [dispatch]);
+    if (!isAuthenticated || status !== 'succeeded') return;
 
-  useEffect(() => {
     initSocket();
     const socket = getSocket();
     if (!socket) return;
@@ -36,7 +34,7 @@ const HomePage = () => {
     socket.on('connect', () => setDisconnected(false));
 
     return () => socket.removeAllListeners();
-  }, [dispatch]);
+  }, [dispatch, isAuthenticated, status]);
 
   useEffect(() => {
     if (!activeChannel && channels.length > 0) {
@@ -83,7 +81,7 @@ const HomePage = () => {
     });
   };
 
-  if (status === 'loading') {
+  if (status === 'loading' || !isAuthenticated) {
     return <div className="loading">Загрузка чата...</div>;
   }
 
