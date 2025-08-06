@@ -14,6 +14,7 @@ export const AuthProvider = ({ children }) => {
   useEffect(() => {
     const savedToken = localStorage.getItem('token');
     const savedUser = localStorage.getItem('user');
+
     if (savedToken && savedUser) {
       setToken(savedToken);
       setUser(JSON.parse(savedUser));
@@ -23,9 +24,8 @@ export const AuthProvider = ({ children }) => {
     }
   }, [dispatch]);
 
-  const login = async (data) => {
+  const login = (data) => {
     const { token: newToken, username } = data;
-
     localStorage.setItem('token', newToken);
     localStorage.setItem('user', JSON.stringify({ username }));
 
@@ -34,8 +34,7 @@ export const AuthProvider = ({ children }) => {
 
     axios.defaults.headers.common.Authorization = `Bearer ${newToken}`;
     initSocket();
-
-    await dispatch(fetchChatData());
+    dispatch(fetchChatData());
   };
 
   const logout = () => {

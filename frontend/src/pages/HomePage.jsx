@@ -7,7 +7,7 @@ import './HomePage.css';
 
 const HomePage = () => {
   const dispatch = useDispatch();
-  const { user, token, isAuthenticated } = useAuth();
+  const { user } = useAuth();
   const { channels = [], messages = [], status = 'idle' } = useSelector((state) => state.chat || {});
 
   const [messageText, setMessageText] = useState('');
@@ -20,8 +20,6 @@ const HomePage = () => {
   const messageInputRef = useRef(null);
 
   useEffect(() => {
-    if (!isAuthenticated || status !== 'succeeded') return;
-
     initSocket();
     const socket = getSocket();
     if (!socket) return;
@@ -34,7 +32,7 @@ const HomePage = () => {
     socket.on('connect', () => setDisconnected(false));
 
     return () => socket.removeAllListeners();
-  }, [dispatch, isAuthenticated, status]);
+  }, [dispatch]);
 
   useEffect(() => {
     if (!activeChannel && channels.length > 0) {
@@ -81,7 +79,7 @@ const HomePage = () => {
     });
   };
 
-  if (status === 'loading' || !isAuthenticated) {
+  if (status === 'loading') {
     return <div className="loading">Загрузка чата...</div>;
   }
 
