@@ -12,22 +12,27 @@ export const AuthProvider = ({ children }) => {
   const dispatch = useDispatch();
 
   useEffect(() => {
-    const savedToken = localStorage.getItem('token');
-    const savedUser = localStorage.getItem('user');
-
-    if (savedToken && savedUser) {
-      setToken(savedToken);
-      setUser(JSON.parse(savedUser));
-      axios.defaults.headers.common.Authorization = `Bearer ${savedToken}`;
+    const savedAuth = JSON.parse(localStorage.getItem('userToken'));
+    if (savedAuth?.token && savedAuth?.username) {
+      setToken(savedAuth.token);
+      setUser({ username: savedAuth.username });
+      axios.defaults.headers.common.Authorization = `Bearer ${savedAuth.token}`;
       initSocket();
       dispatch(fetchChatData());
     }
   }, [dispatch]);
 
-  const login = (data) => {
-    const { token: newToken, username } = data;
-    localStorage.setItem('token', newToken);
-    localStorage.setItem('user', JSON.stringify({ username }));
+  const login = (data, usernameFromForm) => {
+    const { token: newToken } = data;
+    const username = data.username || usernameFromForm;
+
+    if (!newToken || !username) {
+      console.error('Missing token or username in login data');
+      return;
+    }
+
+    const userData = { token: newToken, username };
+    localStorage.setItem('userToken', JSON.stringify(userData));
 
     setToken(newToken);
     setUser({ username });
@@ -38,8 +43,7 @@ export const AuthProvider = ({ children }) => {
   };
 
   const logout = () => {
-    localStorage.removeItem('token');
-    localStorage.removeItem('user');
+    localStorage.removeItem('userToken');
     setToken(null);
     setUser(null);
     delete axios.defaults.headers.common.Authorization;
