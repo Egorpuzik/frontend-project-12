@@ -29,7 +29,7 @@ const LoginPage = () => {
 
     try {
       const response = await axios.post('/api/v1/login', values);
-      auth.login(response.data.token);
+      auth.login(response.data, values.username);
       navigate('/');
     } catch {
       setErrors({ submit: t('errors.authFailed') });

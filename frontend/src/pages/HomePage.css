@@ -33,6 +33,13 @@ html, body, #root {
     background: transparent;
     font-size: 18px;
     cursor: pointer;
+    transition: color 0.3s, background-color 0.3s;
+  }
+  
+  .add-channel-btn:hover {
+    color: #0d6efd;
+    background-color: #e7f1ff;
+    border-radius: 4px;
   }
   
   .channel-list {
@@ -51,11 +58,20 @@ html, body, #root {
     border: none;
     border-radius: 5px;
     cursor: pointer;
+    transition: background-color 0.3s, color 0.3s;
   }
   
   .channel-btn.active {
     background: #495057;
     color: #fff;
+  }
+  
+  .channel-btn:focus,
+  .add-channel-btn:focus,
+  .btn-submit:focus,
+  .btn-cancel:focus {
+    outline: 2px solid #0d6efd;
+    outline-offset: 2px;
   }
   
   .chat-main {
@@ -81,6 +97,7 @@ html, body, #root {
     flex: 1;
     overflow-y: auto;
     padding: 15px;
+    scroll-behavior: smooth;
   }
   
   .message {
@@ -151,6 +168,12 @@ html, body, #root {
     background: #6c757d;
     color: #fff;
     border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+  }
+  
+  .btn-cancel:hover {
+    background: #5a6268;
   }
   
   .btn-submit {
@@ -159,5 +182,26 @@ html, body, #root {
     background: #0d6efd;
     color: #fff;
     border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+  }
+  
+  .btn-submit:hover {
+    background: #084cd5;
+  }
+  
+  @media (max-width: 600px) {
+    .sidebar {
+      width: 60px;
+    }
+  
+    .sidebar-header span {
+      display: none;
+    }
+  
+    .channel-btn {
+      padding: 10px 5px;
+      font-size: 14px;
+    }
   }
   

@@ -2,11 +2,10 @@ import { io } from 'socket.io-client';
 
 let socket = null;
 
-export const initSocket = () => {
-  const token = localStorage.getItem('token');
-
+export const initSocket = (token) => {
   if (socket) {
     socket.disconnect();
+    socket = null;
   }
 
   socket = io('/', {
@@ -28,13 +27,16 @@ export const initSocket = () => {
   socket.on('disconnect', (reason) => {
     console.warn('⚠️ Socket отключён:', reason);
   });
+
+  return socket;
 };
 
 export const getSocket = () => socket;
+
 export const disconnectSocket = () => {
   if (socket) {
     socket.disconnect();
+    socket = null;
     console.log('Socket отключён вручную');
   }
 };
-

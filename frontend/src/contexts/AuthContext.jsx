@@ -9,25 +9,32 @@ export const AuthContext = createContext();
 export const AuthProvider = ({ children }) => {
   const [token, setToken] = useState(null);
   const [user, setUser] = useState(null);
+  const [loading, setLoading] = useState(true);
   const dispatch = useDispatch();
 
   useEffect(() => {
     const savedAuth = JSON.parse(localStorage.getItem('userToken'));
+
     if (savedAuth?.token && savedAuth?.username) {
       setToken(savedAuth.token);
       setUser({ username: savedAuth.username });
+
       axios.defaults.headers.common.Authorization = `Bearer ${savedAuth.token}`;
-      initSocket();
+
+      initSocket(savedAuth.token);
+
       dispatch(fetchChatData());
     }
+
+    setLoading(false);
   }, [dispatch]);
 
   const login = (data, usernameFromForm) => {
-    const { token: newToken } = data;
+    const newToken = data.token;
     const username = data.username || usernameFromForm;
 
     if (!newToken || !username) {
-      console.error('Missing token or username in login data');
+      console.error('Ошибка логина: отсутствует token или username', data);
       return;
     }
 
@@ -38,7 +45,8 @@ export const AuthProvider = ({ children }) => {
     setUser({ username });
 
     axios.defaults.headers.common.Authorization = `Bearer ${newToken}`;
-    initSocket();
+
+    initSocket(newToken);
     dispatch(fetchChatData());
   };
 
@@ -46,6 +54,7 @@ export const AuthProvider = ({ children }) => {
     localStorage.removeItem('userToken');
     setToken(null);
     setUser(null);
+
     delete axios.defaults.headers.common.Authorization;
     disconnectSocket();
   };
@@ -53,7 +62,7 @@ export const AuthProvider = ({ children }) => {
   const isAuthenticated = Boolean(token);
 
   return (
-    <AuthContext.Provider value={{ token, user, login, logout, isAuthenticated }}>
+    <AuthContext.Provider value={{ token, user, login, logout, isAuthenticated, loading }}>
       {children}
     </AuthContext.Provider>
   );

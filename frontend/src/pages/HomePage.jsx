@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { newMessage, addChannel, removeChannel, renameChannel } from '../store/chatSlice.js';
-import { initSocket, getSocket } from '../utils/socket.js';
+import { getSocket } from '../utils/socket.js';
 import { useAuth } from '../contexts/AuthContext.jsx';
 import './HomePage.css';
 
@@ -20,7 +20,6 @@ const HomePage = () => {
   const messageInputRef = useRef(null);
 
   useEffect(() => {
-    initSocket();
     const socket = getSocket();
     if (!socket) return;
 
