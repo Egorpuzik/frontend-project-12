@@ -30,7 +30,9 @@ const HomePage = () => {
     socket.on('disconnect', () => setDisconnected(true));
     socket.on('connect', () => setDisconnected(false));
 
-    return () => socket.removeAllListeners();
+    return () => {
+      socket.removeAllListeners();
+    };
   }, [dispatch]);
 
   useEffect(() => {
@@ -85,7 +87,7 @@ const HomePage = () => {
   return (
     <div className="chat-container">
       {/* ЛЕВАЯ ПАНЕЛЬ */}
-      <div className="sidebar" style={{ zIndex: 2 }}>
+      <div className="sidebar">
         <div className="sidebar-header">
           <span>Каналы</span>
           <button onClick={() => setShowModal(true)} className="add-channel-btn" aria-label="Добавить канал">
@@ -148,7 +150,7 @@ const HomePage = () => {
         <div className="chat-placeholder">Выберите канал</div>
       )}
 
-      {/* МОДАЛКА */}
+      {/* МОДАЛЬНОЕ ОКНО ДОБАВЛЕНИЯ КАНАЛА */}
       {showModal && (
         <div className="modal-overlay">
           <div className="modal">
@@ -161,6 +163,7 @@ const HomePage = () => {
                 value={newChannelName}
                 onChange={(e) => setNewChannelName(e.target.value)}
                 placeholder="Введите имя канала"
+                autoFocus
               />
               <div className="modal-actions">
                 <button type="button" onClick={() => setShowModal(false)} className="btn-cancel">
