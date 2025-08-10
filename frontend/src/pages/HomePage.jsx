@@ -23,19 +23,32 @@ const HomePage = () => {
     const socket = getSocket();
     if (!socket) return;
 
+    const handleNewMessage = (message) => dispatch(newMessage(message));
+    const handleNewChannel = (channel) => dispatch(addChannel(channel));
+    const handleRemoveChannel = ({ id }) => dispatch(removeChannel(id));
+    const handleRenameChannel = (channel) => dispatch(renameChannel(channel));
+
     const onDisconnect = () => setDisconnected(true);
     const onConnect = () => setDisconnected(false);
 
+    socket.on('newMessage', handleNewMessage);
+    socket.on('newChannel', handleNewChannel);
+    socket.on('removeChannel', handleRemoveChannel);
+    socket.on('renameChannel', handleRenameChannel);
     socket.on('disconnect', onDisconnect);
     socket.on('connect', onConnect);
 
     setDisconnected(!socket.connected);
 
     return () => {
+      socket.off('newMessage', handleNewMessage);
+      socket.off('newChannel', handleNewChannel);
+      socket.off('removeChannel', handleRemoveChannel);
+      socket.off('renameChannel', handleRenameChannel);
       socket.off('disconnect', onDisconnect);
       socket.off('connect', onConnect);
     };
-  }, []);
+  }, [dispatch]);
 
   useEffect(() => {
     if (!activeChannel && channels.length > 0) {

@@ -1,6 +1,5 @@
 import React, { createContext, useState, useEffect, useContext } from 'react';
 import axios from 'axios';
-import { useDispatch } from 'react-redux';
 import { disconnectSocket } from '../utils/socket.js';
 
 export const AuthContext = createContext();
@@ -9,7 +8,6 @@ export const AuthProvider = ({ children }) => {
   const [token, setToken] = useState(null);
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
-  const dispatch = useDispatch();
 
   useEffect(() => {
     const savedAuth = JSON.parse(localStorage.getItem('userToken'));
@@ -19,7 +17,6 @@ export const AuthProvider = ({ children }) => {
       setUser({ username: savedAuth.username });
 
       axios.defaults.headers.common.Authorization = `Bearer ${savedAuth.token}`;
-
     }
 
     setLoading(false);
@@ -41,7 +38,6 @@ export const AuthProvider = ({ children }) => {
     setUser({ username });
 
     axios.defaults.headers.common.Authorization = `Bearer ${newToken}`;
-
   };
 
   const logout = () => {
