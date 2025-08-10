@@ -1,8 +1,7 @@
 import React, { createContext, useState, useEffect, useContext } from 'react';
 import axios from 'axios';
 import { useDispatch } from 'react-redux';
-import { fetchChatData } from '../store/chatSlice.js';
-import { initSocket, disconnectSocket } from '../utils/socket.js';
+import { disconnectSocket } from '../utils/socket.js';
 
 export const AuthContext = createContext();
 
@@ -21,13 +20,10 @@ export const AuthProvider = ({ children }) => {
 
       axios.defaults.headers.common.Authorization = `Bearer ${savedAuth.token}`;
 
-      initSocket(savedAuth.token);
-
-      dispatch(fetchChatData());
     }
 
     setLoading(false);
-  }, [dispatch]);
+  }, []);
 
   const login = (data, usernameFromForm) => {
     const newToken = data.token;
@@ -46,8 +42,6 @@ export const AuthProvider = ({ children }) => {
 
     axios.defaults.headers.common.Authorization = `Bearer ${newToken}`;
 
-    initSocket(newToken);
-    dispatch(fetchChatData());
   };
 
   const logout = () => {

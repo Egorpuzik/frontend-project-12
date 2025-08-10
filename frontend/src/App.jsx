@@ -6,7 +6,7 @@ import 'react-toastify/dist/ReactToastify.css';
 
 import { AuthProvider, useAuth } from './contexts/AuthContext.jsx';
 import { initSocket } from './utils/socket.js';
-import { newMessage, addChannel, removeChannel, renameChannel } from './store/chatSlice.js';
+import { newMessage, addChannel, removeChannel, renameChannel, fetchChatData } from './store/chatSlice.js';
 
 import HomePage from './pages/HomePage.jsx';
 import LoginPage from './pages/LoginPage.jsx';
@@ -22,12 +22,14 @@ import rollbarConfig from './utils/rollbarConfig.js';
 
 const AppContent = () => {
   const dispatch = useDispatch();
-  const { user } = useAuth();
+  const { user, loading } = useAuth();
 
   useEffect(() => {
     if (!user) return;
 
-    const socket = initSocket();
+    dispatch(fetchChatData()); 
+
+    const socket = initSocket(user.token);
 
     socket.on('newMessage', (payload) => dispatch(newMessage(payload)));
     socket.on('newChannel', (payload) => dispatch(addChannel(payload)));
@@ -41,6 +43,10 @@ const AppContent = () => {
       socket.off('renameChannel');
     };
   }, [dispatch, user]);
+
+  if (loading) {
+    return <div>Загрузка...</div>;
+  }
 
   return (
     <>

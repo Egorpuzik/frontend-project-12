@@ -26,6 +26,16 @@ export const initSocket = (token) => {
 
   socket.on('disconnect', (reason) => {
     console.warn('⚠️ Socket отключён:', reason);
+    if (reason === 'io server disconnect') {
+      console.log('Попытка переподключения...');
+      socket.connect();
+    } else if (reason === 'io client disconnect') {
+      console.log('Отключение инициировано клиентом, переподключение не происходит.');
+    } else if (reason === 'ping timeout') {
+      console.log('Таймаут пинга — возможно проблемы с сетью.');
+    } else {
+      console.log('Причина отключения:', reason);
+    }
   });
 
   return socket;

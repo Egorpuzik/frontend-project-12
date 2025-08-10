@@ -23,17 +23,19 @@ const HomePage = () => {
     const socket = getSocket();
     if (!socket) return;
 
-    socket.on('newMessage', (message) => dispatch(newMessage(message)));
-    socket.on('newChannel', (channel) => dispatch(addChannel(channel)));
-    socket.on('removeChannel', ({ id }) => dispatch(removeChannel(id)));
-    socket.on('renameChannel', (channel) => dispatch(renameChannel(channel)));
-    socket.on('disconnect', () => setDisconnected(true));
-    socket.on('connect', () => setDisconnected(false));
+    const onDisconnect = () => setDisconnected(true);
+    const onConnect = () => setDisconnected(false);
+
+    socket.on('disconnect', onDisconnect);
+    socket.on('connect', onConnect);
+
+    setDisconnected(!socket.connected);
 
     return () => {
-      socket.removeAllListeners();
+      socket.off('disconnect', onDisconnect);
+      socket.off('connect', onConnect);
     };
-  }, [dispatch]);
+  }, []);
 
   useEffect(() => {
     if (!activeChannel && channels.length > 0) {
@@ -62,6 +64,8 @@ const HomePage = () => {
         if (response.status === 'ok') {
           setMessageText('');
           messageInputRef.current?.focus();
+        } else {
+          console.error('Ошибка отправки сообщения:', response);
         }
       }
     );
