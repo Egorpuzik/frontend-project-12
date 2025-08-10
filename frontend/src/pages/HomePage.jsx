@@ -1,5 +1,6 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
+import axios from 'axios';
 import { newMessage, addChannel, removeChannel, renameChannel } from '../store/chatSlice.js';
 import { getSocket } from '../utils/socket.js';
 import { useAuth } from '../contexts/AuthContext.jsx';
@@ -23,6 +24,7 @@ const HomePage = () => {
     const socket = getSocket();
     if (!socket) return;
 
+    // Подписка на события
     const handleNewMessage = (message) => dispatch(newMessage(message));
     const handleNewChannel = (channel) => dispatch(addChannel(channel));
     const handleRemoveChannel = ({ id }) => dispatch(removeChannel(id));
@@ -65,36 +67,34 @@ const HomePage = () => {
     messageInputRef.current?.focus();
   }, [activeChannel]);
 
-  const handleSendMessage = (e) => {
+  const handleSendMessage = async (e) => {
     e.preventDefault();
-    const socket = getSocket();
-    if (!socket || !messageText.trim() || !activeChannel) return;
+    if (!messageText.trim() || !activeChannel) return;
 
-    socket.emit(
-      'newMessage',
-      { body: messageText.trim(), channelId: activeChannel.id, username: user?.username },
-      (response) => {
-        if (response.status === 'ok') {
-          setMessageText('');
-          messageInputRef.current?.focus();
-        } else {
-          console.error('Ошибка отправки сообщения:', response);
-        }
-      }
-    );
+    try {
+      await axios.post('/api/v1/messages', {
+        body: messageText.trim(),
+        channelId: activeChannel.id,
+        username: user?.username,
+      });
+      setMessageText('');
+      messageInputRef.current?.focus();
+    } catch (error) {
+      console.error('Ошибка отправки сообщения:', error);
+    }
   };
 
-  const handleAddChannel = (e) => {
+  const handleAddChannel = async (e) => {
     e.preventDefault();
-    const socket = getSocket();
-    if (!socket || !newChannelName.trim()) return;
+    if (!newChannelName.trim()) return;
 
-    socket.emit('newChannel', { name: newChannelName.trim() }, (response) => {
-      if (response.status === 'ok') {
-        setShowModal(false);
-        setNewChannelName('');
-      }
-    });
+    try {
+      await axios.post('/api/v1/channels', { name: newChannelName.trim() });
+      setShowModal(false);
+      setNewChannelName('');
+    } catch (error) {
+      console.error('Ошибка добавления канала:', error);
+    }
   };
 
   if (status === 'loading') {
