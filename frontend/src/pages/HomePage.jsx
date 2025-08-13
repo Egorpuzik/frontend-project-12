@@ -1,4 +1,5 @@
 import React, { useEffect, useState, useRef } from 'react';
+import ReactDOM from 'react-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import axios from 'axios';
 import { newMessage, addChannel, removeChannel, renameChannel } from '../store/chatSlice.js';
@@ -24,32 +25,21 @@ const HomePage = () => {
     const socket = getSocket();
     if (!socket) return;
 
-    // Подписка на события
     const handleNewMessage = (message) => dispatch(newMessage(message));
     const handleNewChannel = (channel) => dispatch(addChannel(channel));
     const handleRemoveChannel = ({ id }) => dispatch(removeChannel(id));
     const handleRenameChannel = (channel) => dispatch(renameChannel(channel));
-
     const onDisconnect = () => setDisconnected(true);
     const onConnect = () => setDisconnected(false);
 
-    socket.on('newMessage', handleNewMessage);
-    socket.on('newChannel', handleNewChannel);
-    socket.on('removeChannel', handleRemoveChannel);
-    socket.on('renameChannel', handleRenameChannel);
-    socket.on('disconnect', onDisconnect);
-    socket.on('connect', onConnect);
+    socket.off('newMessage').on('newMessage', handleNewMessage);
+    socket.off('newChannel').on('newChannel', handleNewChannel);
+    socket.off('removeChannel').on('removeChannel', handleRemoveChannel);
+    socket.off('renameChannel').on('renameChannel', handleRenameChannel);
+    socket.off('disconnect').on('disconnect', onDisconnect);
+    socket.off('connect').on('connect', onConnect);
 
     setDisconnected(!socket.connected);
-
-    return () => {
-      socket.off('newMessage', handleNewMessage);
-      socket.off('newChannel', handleNewChannel);
-      socket.off('removeChannel', handleRemoveChannel);
-      socket.off('renameChannel', handleRenameChannel);
-      socket.off('disconnect', onDisconnect);
-      socket.off('connect', onConnect);
-    };
   }, [dispatch]);
 
   useEffect(() => {
@@ -66,6 +56,17 @@ const HomePage = () => {
   useEffect(() => {
     messageInputRef.current?.focus();
   }, [activeChannel]);
+
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (e.key === 'Escape' && showModal) {
+        setShowModal(false);
+        setNewChannelName('');
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [showModal]);
 
   const handleSendMessage = async (e) => {
     e.preventDefault();
@@ -102,99 +103,139 @@ const HomePage = () => {
   }
 
   return (
-    <div className="chat-container">
-      {/* ЛЕВАЯ ПАНЕЛЬ */}
-      <div className="sidebar">
-        <div className="sidebar-header">
-          <span>Каналы</span>
-          <button onClick={() => setShowModal(true)} className="add-channel-btn" aria-label="Добавить канал">
-            +
-          </button>
+    <>
+      <div className="chat-container">
+        <div className="sidebar">
+          <div className="sidebar-header">
+            <span>Каналы</span>
+            <button
+              onClick={() => setShowModal(true)}
+              className="add-channel-btn"
+              aria-label="Добавить канал"
+              type="button"
+            >
+              +
+            </button>
+          </div>
+          <ul className="channel-list">
+            {channels.map((channel) => (
+              <li key={channel.id}>
+                <button
+                  type="button"
+                  aria-label={channel.name}
+                  onClick={() => setActiveChannel(channel)}
+                  className={`channel-btn ${activeChannel?.id === channel.id ? 'active' : ''}`}
+                >
+                  <span>#</span> {channel.name}
+                </button>
+              </li>
+            ))}
+          </ul>
         </div>
-        <ul className="channel-list">
-          {channels.map((channel) => (
-            <li key={channel.id}>
-              <button
-                type="button"
-                aria-label={channel.name}
-                onClick={() => setActiveChannel(channel)}
-                className={`channel-btn ${activeChannel?.id === channel.id ? 'active' : ''}`}
-              >
-                <span>#</span> {channel.name}
+
+        {activeChannel ? (
+          <div className="chat-main">
+            <div className="chat-header">
+              <span>#{activeChannel.name}</span>
+              <span className="message-count">
+                {messages.filter((m) => m.channelId === activeChannel.id).length} сообщений
+              </span>
+            </div>
+
+            <div className="message-list">
+              {messages
+                .filter((m) => m.channelId === activeChannel.id)
+                .map((msg) => (
+                  <div key={msg.id} className="message">
+                    <strong>{msg.username}:</strong> {msg.body}
+                  </div>
+                ))}
+              <div ref={messagesEndRef} />
+            </div>
+
+            <form onSubmit={handleSendMessage} className="message-form">
+              <input
+                ref={messageInputRef}
+                type="text"
+                aria-label="Новое сообщение"
+                value={messageText}
+                onChange={(e) => setMessageText(e.target.value)}
+                placeholder="Введите сообщение..."
+                disabled={disconnected}
+              />
+              <button type="submit" disabled={disconnected || !activeChannel}>
+                ➤
               </button>
-            </li>
-          ))}
-        </ul>
+            </form>
+          </div>
+        ) : (
+          <div className="chat-placeholder">Выберите канал</div>
+        )}
       </div>
 
-      {/* ПРАВАЯ ПАНЕЛЬ */}
-      {activeChannel ? (
-        <div className="chat-main">
-          <div className="chat-header">
-            <span>#{activeChannel.name}</span>
-            <span className="message-count">
-              {messages.filter((m) => m.channelId === activeChannel.id).length} сообщений
-            </span>
-          </div>
-
-          <div className="message-list">
-            {messages
-              .filter((m) => m.channelId === activeChannel.id)
-              .map((msg) => (
-                <div key={msg.id} className="message">
-                  <strong>{msg.username}:</strong> {msg.body}
-                </div>
-              ))}
-            <div ref={messagesEndRef} />
-          </div>
-
-          <form onSubmit={handleSendMessage} className="message-form">
-            <input
-              ref={messageInputRef}
-              type="text"
-              aria-label="Новое сообщение"
-              value={messageText}
-              onChange={(e) => setMessageText(e.target.value)}
-              placeholder="Введите сообщение..."
-              disabled={disconnected}
-            />
-            <button type="submit" disabled={disconnected || !activeChannel}>
-              ➤
-            </button>
-          </form>
-        </div>
-      ) : (
-        <div className="chat-placeholder">Выберите канал</div>
-      )}
-
-      {/* МОДАЛЬНОЕ ОКНО ДОБАВЛЕНИЯ КАНАЛА */}
-      {showModal && (
-        <div className="modal-overlay">
-          <div className="modal">
-            <h3>Добавить канал</h3>
-            <form onSubmit={handleAddChannel}>
-              <label htmlFor="newChannel">Имя канала</label>
-              <input
-                id="newChannel"
-                type="text"
-                value={newChannelName}
-                onChange={(e) => setNewChannelName(e.target.value)}
-                placeholder="Введите имя канала"
-                autoFocus
-              />
-              <div className="modal-actions">
-                <button type="button" onClick={() => setShowModal(false)} className="btn-cancel">
+      {showModal &&
+        ReactDOM.createPortal(
+          <div
+            className="modal-overlay"
+            onClick={(e) => {
+              if (e.target.classList.contains('modal-overlay')) {
+                setShowModal(false);
+                setNewChannelName('');
+              }
+            }}
+          >
+            <div className="modal" onClick={(e) => e.stopPropagation()}>
+              <div className="modal-header">
+                <h3 className="modal-title">Добавить канал</h3>
+                <button
+                  type="button"
+                  className="btn-close"
+                  aria-label="Закрыть"
+                  onClick={() => {
+                    setShowModal(false);
+                    setNewChannelName('');
+                  }}
+                >
+                  ×
+                </button>
+              </div>
+              <div className="modal-body">
+                <form onSubmit={handleAddChannel}>
+                  <label htmlFor="newChannel">Имя канала</label>
+                  <input
+                    id="newChannel"
+                    type="text"
+                    value={newChannelName}
+                    onChange={(e) => setNewChannelName(e.target.value)}
+                    placeholder="Введите имя канала"
+                    autoFocus
+                  />
+                </form>
+              </div>
+              <div className="modal-footer">
+                <button
+                  type="button"
+                  className="btn-cancel"
+                  onClick={() => {
+                    setShowModal(false);
+                    setNewChannelName('');
+                  }}
+                >
                   Отменить
                 </button>
-                <button type="submit" className="btn-submit">
+                <button
+                  type="submit"
+                  className="btn-submit"
+                  onClick={handleAddChannel}
+                >
                   Отправить
                 </button>
               </div>
-            </form>
-          </div>
-        </div>
-      )}
-    </div>
+            </div>
+          </div>,
+          document.body
+        )}
+    </>
   );
 };
 

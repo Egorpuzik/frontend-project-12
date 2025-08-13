@@ -3,9 +3,14 @@ import { io } from 'socket.io-client';
 let socket = null;
 
 export const initSocket = (token) => {
-  if (socket) {
-    socket.disconnect();
-    socket = null;
+  if (socket && socket.connected) {
+    return socket;
+  }
+
+  if (socket && !socket.connected) {
+    socket.auth = { token };
+    socket.connect();
+    return socket;
   }
 
   socket = io('/', {
@@ -30,9 +35,9 @@ export const initSocket = (token) => {
       console.log('Попытка переподключения...');
       socket.connect();
     } else if (reason === 'io client disconnect') {
-      console.log('Отключение инициировано клиентом, переподключение не происходит.');
+      console.log('Отключение инициировано клиентом.');
     } else if (reason === 'ping timeout') {
-      console.log('Таймаут пинга — возможно проблемы с сетью.');
+      console.log('Таймаут пинга — проблемы с сетью.');
     } else {
       console.log('Причина отключения:', reason);
     }
@@ -46,7 +51,6 @@ export const getSocket = () => socket;
 export const disconnectSocket = () => {
   if (socket) {
     socket.disconnect();
-    socket = null;
     console.log('Socket отключён вручную');
   }
 };
