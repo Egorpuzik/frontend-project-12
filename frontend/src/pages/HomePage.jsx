@@ -1,7 +1,6 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import axios from 'axios';
-import { newMessage, addChannel, removeChannel, renameChannel } from '../store/chatSlice.js';
 import { getSocket } from '../utils/socket.js';
 import { useAuth } from '../contexts/AuthContext.jsx';
 import './HomePage.css';
@@ -24,22 +23,14 @@ const HomePage = () => {
     const socket = getSocket();
     if (!socket) return;
 
-    const handleNewMessage = (message) => dispatch(newMessage(message));
-    const handleNewChannel = (channel) => dispatch(addChannel(channel));
-    const handleRemoveChannel = ({ id }) => dispatch(removeChannel(id));
-    const handleRenameChannel = (channel) => dispatch(renameChannel(channel));
     const onDisconnect = () => setDisconnected(true);
     const onConnect = () => setDisconnected(false);
 
-    socket.off('newMessage').on('newMessage', handleNewMessage);
-    socket.off('newChannel').on('newChannel', handleNewChannel);
-    socket.off('removeChannel').on('removeChannel', handleRemoveChannel);
-    socket.off('renameChannel').on('renameChannel', handleRenameChannel);
     socket.off('disconnect').on('disconnect', onDisconnect);
     socket.off('connect').on('connect', onConnect);
 
     setDisconnected(!socket.connected);
-  }, [dispatch]);
+  }, []);
 
   useEffect(() => {
     if (!activeChannel && channels.length > 0) {
