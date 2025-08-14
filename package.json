@@ -4,15 +4,11 @@
   "description": "[![Actions Status](https://github.com/Egorpuzik/frontend-project-12/actions/workflows/hexlet-check.yml/badge.svg)](https://github.com/Egorpuzik/frontend-project-12/actions)",
   "main": "index.js",
   "type": "commonjs",
-"scripts": {
-  "start": "npm run backend",
-  "start-server": "npx start-server",
-  "start-frontend": "serve -s ./frontend/dist -l 5002",
-  "backend": "npx start-server -s ./frontend/dist -p 5001 -a 0.0.0.0",
-  "build": "cd frontend && npm ci && npm run build",
-  "dev": "npm run dev --prefix frontend",
-  "test": "jest --passWithNoTests",
-  "test:e2e": "playwright test"
+  "scripts": {
+    "build": "npm run build --prefix frontend",
+    "start": "start-server -s ./frontend/dist",
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "postinstall": "cd frontend && npm ci"
   },
   "repository": {
     "type": "git",
