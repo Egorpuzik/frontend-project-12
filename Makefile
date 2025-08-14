@@ -3,12 +3,12 @@ install:
 	cd frontend && npm ci
 
 build:
-	if exist frontend\dist rmdir /s /q frontend\dist
+	if exist frontend\dist (powershell -Command "Remove-Item -Recurse -Force frontend\dist")
 	cd frontend && npm run build
 
 start-dev:
-	start "" /b make start-backend
-	start "" /b make start-frontend
+	start /MIN cmd /C "make start-backend"
+	start /MIN cmd /C "make start-frontend"
 
 start-frontend:
 	cd frontend && npm run dev
@@ -25,6 +25,3 @@ lint:
 
 test:
 	npm test
-
-test-e2e:
-	npx playwright test
