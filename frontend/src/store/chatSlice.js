@@ -9,15 +9,11 @@ export const fetchChatData = createAsyncThunk(
       const token = savedAuth?.token;
 
       if (!token) {
-        console.warn('⚠️ fetchChatData: отсутствует токен авторизации');
+        console.warn('⚠️ Нет токена авторизации');
         return rejectWithValue('Нет токена авторизации');
       }
 
-      const config = {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      };
+      const config = { headers: { Authorization: `Bearer ${token}` } };
 
       const [channelsRes, messagesRes] = await Promise.all([
         axios.get('/api/v1/channels', config),
@@ -25,13 +21,13 @@ export const fetchChatData = createAsyncThunk(
       ]);
 
       return {
-        channels: channelsRes.data,
-        messages: messagesRes.data,
-        currentChannelId: channelsRes.data.length > 0 ? channelsRes.data[0].id : null,
+        channels: channelsRes.data || [],
+        messages: messagesRes.data || [],
+        currentChannelId: channelsRes.data?.[0]?.id || null,
       };
     } catch (error) {
       console.error('❌ Ошибка fetchChatData:', error.response?.data || error.message);
-      return rejectWithValue(error.response?.data || 'Ошибка загрузки');
+      return rejectWithValue(error.response?.data || 'Ошибка загрузки данных');
     }
   }
 );
@@ -69,6 +65,13 @@ const chatSlice = createSlice({
       const channel = state.channels.find((ch) => ch.id === id);
       if (channel) channel.name = name;
     },
+    resetChat: (state) => {
+      state.channels = [];
+      state.messages = [];
+      state.currentChannelId = null;
+      state.status = 'idle';
+      state.error = null;
+    },
   },
   extraReducers: (builder) => {
     builder
@@ -85,11 +88,20 @@ const chatSlice = createSlice({
       .addCase(fetchChatData.rejected, (state, action) => {
         state.status = 'failed';
         state.error = action.payload;
+        state.channels = [];
+        state.messages = [];
+        state.currentChannelId = null;
       });
   },
 });
 
-export const { newMessage, setCurrentChannelId, addChannel, removeChannel, renameChannel } =
-  chatSlice.actions;
+export const {
+  newMessage,
+  setCurrentChannelId,
+  addChannel,
+  removeChannel,
+  renameChannel,
+  resetChat,
+} = chatSlice.actions;
 
 export default chatSlice.reducer;

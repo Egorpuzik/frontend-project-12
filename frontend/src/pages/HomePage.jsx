@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import axios from 'axios';
-import { newMessage, addChannel, removeChannel, renameChannel } from '../store/chatSlice.js';
+import { fetchChatData, newMessage, addChannel, removeChannel, renameChannel } from '../store/chatSlice.js';
 import { getSocket } from '../utils/socket.js';
 import { useAuth } from '../contexts/AuthContext.jsx';
 import './HomePage.css';
@@ -9,7 +9,7 @@ import './HomePage.css';
 const HomePage = () => {
   const dispatch = useDispatch();
   const { user } = useAuth();
-  const { channels = [], messages = [], status = 'idle' } = useSelector((state) => state.chat || {});
+  const { channels = [], messages = [], status = 'idle', error } = useSelector((state) => state.chat || {});
 
   const [messageText, setMessageText] = useState('');
   const [disconnected, setDisconnected] = useState(false);
@@ -19,6 +19,10 @@ const HomePage = () => {
 
   const messagesEndRef = useRef(null);
   const messageInputRef = useRef(null);
+
+  useEffect(() => {
+    dispatch(fetchChatData());
+  }, [dispatch]);
 
   useEffect(() => {
     const socket = getSocket();
@@ -42,7 +46,7 @@ const HomePage = () => {
   }, [dispatch]);
 
   useEffect(() => {
-    if (!activeChannel && channels.length > 0) {
+    if (channels.length > 0 && !activeChannel) {
       const general = channels.find((c) => c.name === 'general') || channels[0];
       setActiveChannel(general);
     }
@@ -99,6 +103,10 @@ const HomePage = () => {
 
   if (status === 'loading') {
     return <div className="loading">Загрузка чата...</div>;
+  }
+
+  if (error) {
+    return <div className="error">Ошибка загрузки: {error}</div>;
   }
 
   return (
@@ -171,12 +179,15 @@ const HomePage = () => {
       )}
 
       {showModal && (
-        <div className="modal-overlay" onClick={(e) => {
-          if (e.target.classList.contains('modal-overlay')) {
-            setShowModal(false);
-            setNewChannelName('');
-          }
-        }}>
+        <div
+          className="modal-overlay"
+          onClick={(e) => {
+            if (e.target.classList.contains('modal-overlay')) {
+              setShowModal(false);
+              setNewChannelName('');
+            }
+          }}
+        >
           <div className="modal" onClick={(e) => e.stopPropagation()}>
             <button
               type="button"
