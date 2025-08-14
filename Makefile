@@ -3,11 +3,12 @@ install:
 	cd frontend && npm ci
 
 build:
-	rm -rf frontend/dist
+	if exist frontend\dist rmdir /s /q frontend\dist
 	cd frontend && npm run build
 
 start-dev:
-	make start-backend & make start-frontend
+	start "" /b make start-backend
+	start "" /b make start-frontend
 
 start-frontend:
 	cd frontend && npm run dev
@@ -16,8 +17,8 @@ start-backend:
 	npx @hexlet/chat-server
 
 start:
-	npm run build
-	npm start
+	make build
+	npm run start
 
 lint:
 	cd frontend && npx eslint .
