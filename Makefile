@@ -19,3 +19,6 @@ develop:
 build:
 	rm -rf ./frontend/dist && npm run build
 
+lint:
+	@echo "Lint step skipped"
+
