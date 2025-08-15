@@ -22,3 +22,5 @@ build:
 lint:
 	@echo "Lint step skipped"
 
+test:
+	@echo "Test step skipped"
