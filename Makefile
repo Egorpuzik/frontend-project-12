@@ -1,27 +1,27 @@
-install:
-	npm ci
-	cd frontend && npm ci
+lint-frontend:
+   make -C frontend lint
 
-build:
-	if exist frontend\dist (powershell -Command "Remove-Item -Recurse -Force frontend\dist")
-	cd frontend && npm run build
+lint-fix-frontend: 
+   make -C frontend lint-fix
 
-start-dev:
-	start /MIN cmd /C "make start-backend"
-	start /MIN cmd /C "make start-frontend"
+install: 
+   npm ci
 
-start-frontend:
-	cd frontend && npm run dev
+start-frontend:  
+   make -C frontend start
 
-start-backend:
-	npx @hexlet/chat-server
+start-backend:  
+   npx start-server -s ./frontend/dist
 
-start:
-	make build
-	npm run start
+deploy:  
+   git push heroku main
 
-lint:
-	cd frontend && npx eslint .
+start: 
+   make start-backend
 
-test:
-	@echo "No tests to run"
+develop: 
+   make start-backend & make start-frontend
+
+build: 
+   rm -rf ./frontend/dist npm run build
+
