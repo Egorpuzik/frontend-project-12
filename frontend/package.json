@@ -3,13 +3,13 @@
   "private": true,
   "version": "0.0.0",
   "type": "module",
-  "scripts": {
+"scripts": {
   "dev": "vite",
   "start": "npx start-server -s ./dist",
   "build": "vite build",
   "lint": "eslint .",
   "preview": "vite preview"
-  },
+},
   "dependencies": {
     "@reduxjs/toolkit": "^2.8.2",
     "@rollbar/react": "^0.12.1",
