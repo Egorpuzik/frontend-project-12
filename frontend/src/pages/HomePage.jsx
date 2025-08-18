@@ -16,6 +16,7 @@ const HomePage = () => {
   const [activeChannel, setActiveChannel] = useState(null);
   const [showModal, setShowModal] = useState(false);
   const [newChannelName, setNewChannelName] = useState('');
+  const [notification, setNotification] = useState('');
 
   const messagesEndRef = useRef(null);
   const messageInputRef = useRef(null);
@@ -28,10 +29,7 @@ const HomePage = () => {
     const socket = getSocket();
     if (!socket) return;
 
-    const handleNewMessage = (message) => {
-      console.log('Получено сообщение:', message); 
-      dispatch(newMessage(message));
-    };
+    const handleNewMessage = (message) => dispatch(newMessage(message));
     const handleNewChannel = (channel) => dispatch(addChannel(channel));
     const handleRemoveChannel = ({ id }) => dispatch(removeChannel(id));
     const handleRenameChannel = (channel) => dispatch(renameChannel(channel));
@@ -108,6 +106,8 @@ const HomePage = () => {
       await axios.post('/api/v1/channels', { name: newChannelName.trim() });
       setShowModal(false);
       setNewChannelName('');
+      setNotification('Канал создан');
+      setTimeout(() => setNotification(''), 3000);
     } catch (err) {
       console.error('Ошибка добавления канала:', err);
     }
@@ -184,6 +184,8 @@ const HomePage = () => {
       ) : (
         <div className="chat-placeholder">Выберите канал</div>
       )}
+
+      {notification && <div className="notification">{notification}</div>}
 
       {showModal && (
         <div
