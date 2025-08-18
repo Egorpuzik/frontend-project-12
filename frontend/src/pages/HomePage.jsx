@@ -4,20 +4,19 @@ import axios from 'axios';
 import { fetchChatData, newMessage, addChannel, removeChannel, renameChannel } from '../store/chatSlice.js';
 import { getSocket } from '../utils/socket.js';
 import { useAuth } from '../contexts/AuthContext.jsx';
+import { toast } from 'react-toastify';
 import './HomePage.css';
 
 const HomePage = () => {
   const dispatch = useDispatch();
   const { user } = useAuth();
-  const { channels = [], messages = [], status = 'idle', error } =
-    useSelector((state) => state.chat || {});
+  const { channels = [], messages = [], status = 'idle', error } = useSelector((state) => state.chat || {});
 
   const [messageText, setMessageText] = useState('');
   const [disconnected, setDisconnected] = useState(false);
   const [activeChannel, setActiveChannel] = useState(null);
   const [showModal, setShowModal] = useState(false);
   const [newChannelName, setNewChannelName] = useState('');
-  const [notification, setNotification] = useState('');
 
   const messagesEndRef = useRef(null);
   const messageInputRef = useRef(null);
@@ -91,6 +90,7 @@ const HomePage = () => {
       messageInputRef.current?.focus();
     } catch (err) {
       console.error('Ошибка отправки сообщения:', err);
+      toast.error('Ошибка соединения');
     }
   };
 
@@ -101,10 +101,10 @@ const HomePage = () => {
     try {
       await axios.post('/api/v1/channels', { name: newChannelName.trim() });
       closeModal();
-      setNotification('Канал создан');
-      setTimeout(() => setNotification(''), 3000);
+      toast.success('Канал создан');
     } catch (err) {
       console.error('Ошибка добавления канала:', err);
+      toast.error('Ошибка соединения');
     }
   };
 
@@ -133,9 +133,7 @@ const HomePage = () => {
                 type="button"
                 aria-label={channel.name}
                 onClick={() => setActiveChannel(channel)}
-                className={`channel-btn ${
-                  activeChannel?.id === channel.id ? 'active' : ''
-                }`}
+                className={`channel-btn ${activeChannel?.id === channel.id ? 'active' : ''}`}
               >
                 <span>#</span> {channel.name}
               </button>
@@ -183,9 +181,6 @@ const HomePage = () => {
       ) : (
         <div className="chat-placeholder">Выберите канал</div>
       )}
-
-      {/* Уведомления */}
-      {notification && <div className="notification">{notification}</div>}
 
       {/* Модалка добавления канала */}
       {showModal && (
