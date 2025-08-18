@@ -1,82 +1,84 @@
 {
-    "login": {
-      "header": "Войти",
-      "username": "Ваш ник",
-      "password": "Пароль",
-      "submit": "Войти",
-      "noAccount": "Нет аккаунта?",
-      "signup": "Регистрация"
-    },
-    "signup": {
-      "header": "Регистрация",
-      "username": "Ваш ник",
-      "password": "Пароль",
-      "confirmPassword": "Подтвердите пароль",
-      "submit": "Войти",
-      "success": "Регистрация прошла успешно"
-    },
-    "errors": {
-      "required": "Заполните это поле.",
-      "min": "Минимум {{min}} символов",
-      "max": "Максимум {{max}} символов",
-      "passwordsMustMatch": "Пароли должны совпадать",
-      "authFailed": "Неверные имя пользователя или пароль",
-      "userExists": "Пользователь уже существует",
-      "network": "Ошибка соединения",
-      "unknown": "Неизвестная ошибка"
-    },
-    "chat": {
-      "channels": "Каналы",
-      "send": "Отправить",
-      "newMessage": "Новое сообщение",
-      "messagePlaceholder": "Введите сообщение..."
-    },
-    "modals": {
-      "add": {
-        "header": "Добавить канал",
-        "submit": "Отправить",
-        "cancel": "Отменить"
-      },
-      "rename": {
-        "header": "Переименовать канал",
-        "submit": "Отправить",
-        "cancel": "Отменить"
-      },
-      "remove": {
-        "header": "Удалить канал",
-        "body": "Вы уверены?",
-        "submit": "Удалить",
-        "cancel": "Отменить"
-      }
-    },
-    "toast": {
-      "networkError": "Ошибка соединения",
-      "channelCreated": "Канал создан",
-      "channelRenamed": "Канал переименован",
-      "channelRemoved": "Канал удалён",
-      "signupSuccess": "Регистрация прошла успешно",
-      "unknownError": "Неизвестная ошибка"
-    },
-    "placeholders": {
-      "username": "Введите имя пользователя",
-      "password": "Введите пароль",
-      "confirmPassword": "Подтвердите пароль"
-    },
-    "logout": "Выйти",
-    "hexletChat": "Hexlet Chat",
-    "notFound": {
-      "header": "Страница не найдена",
-      "message": "Но вы можете перейти на главную страницу"
-    },
-    "yourNickname": "Ваш ник",
-    "wrongCredentials": "Неверные имя пользователя или пароль",
+  "login": {
+    "header": "Войти",
+    "username": "Ваш ник",
+    "password": "Пароль",
+    "submit": "Войти",
+    "noAccount": "Нет аккаунта?",
+    "signup": "Регистрация"
+  },
+  "signup": {
+    "header": "Регистрация",
+    "username": "Ваш ник",
+    "password": "Пароль",
+    "confirmPassword": "Подтвердите пароль",
+    "submit": "Войти",
+    "success": "Регистрация прошла успешно"
+  },
+  "errors": {
+    "required": "Заполните это поле.",
+    "min": "Минимум {{min}} символов",
+    "max": "Максимум {{max}} символов",
+    "passwordsMustMatch": "Пароли должны совпадать",
+    "authFailed": "Неверные имя пользователя или пароль",
+    "userExists": "Пользователь уже существует",
+    "network": "Ошибка соединения",
+    "unknown": "Неизвестная ошибка"
+  },
+  "chat": {
+    "channels": "Каналы",
     "send": "Отправить",
-    "add": "+",
-    "channelName": "Имя канала",
-    "channelManagement": "Управление каналом",
-    "rename": "Переименовать",
-    "remove": "Удалить",
-    "usernameRules": "От 3 до 20 символов",
-    "passwordMin": "Не менее 6 символов"
-  }
+    "newMessage": "Новое сообщение",
+    "messagePlaceholder": "Введите сообщение...",
+    "general": "general"
+  },
+  "modals": {
+    "add": {
+      "header": "Добавить канал",
+      "submit": "Отправить",
+      "cancel": "Отменить"
+    },
+    "rename": {
+      "header": "Переименовать канал",
+      "submit": "Отправить",
+      "cancel": "Отменить"
+    },
+    "remove": {
+      "header": "Удалить канал",
+      "body": "Вы уверены?",
+      "submit": "Удалить",
+      "cancel": "Отменить"
+    }
+  },
+  "toast": {
+    "networkError": "Ошибка соединения",
+    "channelCreated": "Канал создан",
+    "channelRenamed": "Канал переименован",
+    "channelRemoved": "Канал удалён",
+    "signupSuccess": "Регистрация прошла успешно",
+    "unknownError": "Неизвестная ошибка"
+  },
+  "placeholders": {
+    "username": "Введите имя пользователя",
+    "password": "Введите пароль",
+    "confirmPassword": "Подтвердите пароль"
+  },
+  "logout": "Выйти",
+  "hexletChat": "Hexlet Chat",
+  "notFound": {
+    "header": "Страница не найдена",
+    "message": "Но вы можете перейти на главную страницу"
+  },
+  "yourNickname": "Ваш ник",
+  "wrongCredentials": "Неверные имя пользователя или пароль",
+  "send": "Отправить",
+  "add": "+",
+  "channelName": "Имя канала",
+  "channelManagement": "Управление каналом",
+  "rename": "Переименовать",
+  "remove": "Удалить",
+  "usernameRules": "От 3 до 20 символов",
+  "passwordMin": "Не менее 6 символов"
+}
+
   
