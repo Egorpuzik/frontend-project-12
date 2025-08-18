@@ -9,7 +9,8 @@ import './HomePage.css';
 const HomePage = () => {
   const dispatch = useDispatch();
   const { user } = useAuth();
-  const { channels = [], messages = [], status = 'idle', error } = useSelector((state) => state.chat || {});
+  const { channels = [], messages = [], status = 'idle', error } =
+    useSelector((state) => state.chat || {});
 
   const [messageText, setMessageText] = useState('');
   const [disconnected, setDisconnected] = useState(false);
@@ -113,11 +114,13 @@ const HomePage = () => {
     }
   };
 
-  if (status === 'loading') return <div className="loading">Загрузка чата...</div>;
+  if (status === 'loading')
+    return <div className="loading">Загрузка чата...</div>;
   if (error) return <div className="error">Ошибка загрузки: {error}</div>;
 
   return (
     <div className="chat-container">
+      {/* Сайдбар с каналами */}
       <div className="sidebar">
         <div className="sidebar-header">
           <span>Каналы</span>
@@ -137,7 +140,9 @@ const HomePage = () => {
                 type="button"
                 aria-label={channel.name}
                 onClick={() => setActiveChannel(channel)}
-                className={`channel-btn ${activeChannel?.id === channel.id ? 'active' : ''}`}
+                className={`channel-btn ${
+                  activeChannel?.id === channel.id ? 'active' : ''
+                }`}
               >
                 <span>#</span> {channel.name}
               </button>
@@ -146,12 +151,16 @@ const HomePage = () => {
         </ul>
       </div>
 
+      {/* Основное окно чата */}
       {activeChannel ? (
         <div className="chat-main">
           <div className="chat-header">
             <span>#{activeChannel.name}</span>
             <span className="message-count">
-              {messages.filter((m) => m.channelId === activeChannel.id).length} сообщений
+              {
+                messages.filter((m) => m.channelId === activeChannel.id).length
+              }{' '}
+              сообщений
             </span>
           </div>
 
@@ -185,8 +194,10 @@ const HomePage = () => {
         <div className="chat-placeholder">Выберите канал</div>
       )}
 
+      {/* Уведомления */}
       {notification && <div className="notification">{notification}</div>}
 
+      {/* Модалка добавления канала */}
       {showModal && (
         <div
           className="modal-overlay"
@@ -221,7 +232,11 @@ const HomePage = () => {
                 autoFocus
               />
               <div className="modal-actions">
-                <button type="button" onClick={() => setShowModal(false)} className="btn-cancel">
+                <button
+                  type="button"
+                  onClick={() => setShowModal(false)}
+                  className="btn-cancel"
+                >
                   Отменить
                 </button>
                 <button type="submit" className="btn-submit">
