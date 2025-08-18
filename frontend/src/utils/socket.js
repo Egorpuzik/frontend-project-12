@@ -8,8 +8,9 @@ export const initSocket = (token) => {
     socket = null;
   }
 
-  socket = io(import.meta.env.VITE_API_URL || 'http://localhost:5001', {
+  socket = io('/socket.io', {
     auth: { token },
+    transports: ['websocket'], 
     autoConnect: true,
     reconnection: true,
     reconnectionAttempts: 5,
