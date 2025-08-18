@@ -7,7 +7,8 @@ import { closeModal } from '../../store/modalsSlice.js';
 import { useSocket } from '../../hooks/index.js';
 import { setCurrentChannelId } from '../../store/channelsSlice.js';
 import filterProfanity from '../../utils/filterProfanity.js';
-import './CustomModal.css'; 
+import { toast } from 'react-toastify';   
+import './CustomModal.css';
 
 const AddChannelModal = () => {
   const { t } = useTranslation();
@@ -40,6 +41,8 @@ const AddChannelModal = () => {
           dispatch(setCurrentChannelId(response.data.id));
           dispatch(closeModal());
           resetForm();
+
+          toast.success('Канал создан');  
         } else {
           setErrors({ name: t('errors.network') });
         }
