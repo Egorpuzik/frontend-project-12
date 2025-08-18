@@ -23,10 +23,20 @@ const HomePage = () => {
   const messageInputRef = useRef(null);
 
   const openModal = () => setShowModal(true);
-  const closeModal = () => {
+  const closeModal = useCallback(() => {
     setShowModal(false);
     setNewChannelName('');
-  };
+  }, []);
+
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (e.key === 'Escape' && showModal) {
+        closeModal();
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [showModal, closeModal]);
 
   useEffect(() => {
     dispatch(fetchChatData());
@@ -100,8 +110,12 @@ const HomePage = () => {
 
     try {
       await axios.post('/api/v1/channels', { name: newChannelName.trim() });
-      closeModal();
       setNotification('Канал создан');
+
+      setTimeout(() => {
+        closeModal();
+      }, 100); 
+
       setTimeout(() => setNotification(''), 3000);
     } catch (err) {
       console.error('Ошибка добавления канала:', err);
