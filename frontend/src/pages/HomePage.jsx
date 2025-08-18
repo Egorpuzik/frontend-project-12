@@ -28,21 +28,33 @@ const HomePage = () => {
     const socket = getSocket();
     if (!socket) return;
 
-    const handleNewMessage = (message) => dispatch(newMessage(message));
+    const handleNewMessage = (message) => {
+      console.log('Получено сообщение:', message); 
+      dispatch(newMessage(message));
+    };
     const handleNewChannel = (channel) => dispatch(addChannel(channel));
     const handleRemoveChannel = ({ id }) => dispatch(removeChannel(id));
     const handleRenameChannel = (channel) => dispatch(renameChannel(channel));
     const onDisconnect = () => setDisconnected(true);
     const onConnect = () => setDisconnected(false);
 
-    socket.off('newMessage').on('newMessage', handleNewMessage);
-    socket.off('newChannel').on('newChannel', handleNewChannel);
-    socket.off('removeChannel').on('removeChannel', handleRemoveChannel);
-    socket.off('renameChannel').on('renameChannel', handleRenameChannel);
-    socket.off('disconnect').on('disconnect', onDisconnect);
-    socket.off('connect').on('connect', onConnect);
+    socket.on('newMessage', handleNewMessage);
+    socket.on('newChannel', handleNewChannel);
+    socket.on('removeChannel', handleRemoveChannel);
+    socket.on('renameChannel', handleRenameChannel);
+    socket.on('disconnect', onDisconnect);
+    socket.on('connect', onConnect);
 
     setDisconnected(!socket.connected);
+
+    return () => {
+      socket.off('newMessage', handleNewMessage);
+      socket.off('newChannel', handleNewChannel);
+      socket.off('removeChannel', handleRemoveChannel);
+      socket.off('renameChannel', handleRenameChannel);
+      socket.off('disconnect', onDisconnect);
+      socket.off('connect', onConnect);
+    };
   }, [dispatch]);
 
   useEffect(() => {
@@ -83,8 +95,8 @@ const HomePage = () => {
       });
       setMessageText('');
       messageInputRef.current?.focus();
-    } catch (error) {
-      console.error('Ошибка отправки сообщения:', error);
+    } catch (err) {
+      console.error('Ошибка отправки сообщения:', err);
     }
   };
 
@@ -96,18 +108,13 @@ const HomePage = () => {
       await axios.post('/api/v1/channels', { name: newChannelName.trim() });
       setShowModal(false);
       setNewChannelName('');
-    } catch (error) {
-      console.error('Ошибка добавления канала:', error);
+    } catch (err) {
+      console.error('Ошибка добавления канала:', err);
     }
   };
 
-  if (status === 'loading') {
-    return <div className="loading">Загрузка чата...</div>;
-  }
-
-  if (error) {
-    return <div className="error">Ошибка загрузки: {error}</div>;
-  }
+  if (status === 'loading') return <div className="loading">Загрузка чата...</div>;
+  if (error) return <div className="error">Ошибка загрузки: {error}</div>;
 
   return (
     <div className="chat-container">
