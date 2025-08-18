@@ -22,6 +22,12 @@ const HomePage = () => {
   const messagesEndRef = useRef(null);
   const messageInputRef = useRef(null);
 
+  const openModal = () => setShowModal(true);
+  const closeModal = () => {
+    setShowModal(false);
+    setNewChannelName('');
+  };
+
   useEffect(() => {
     dispatch(fetchChatData());
   }, [dispatch]);
@@ -71,17 +77,6 @@ const HomePage = () => {
     messageInputRef.current?.focus();
   }, [activeChannel]);
 
-  useEffect(() => {
-    const handleKeyDown = (e) => {
-      if (e.key === 'Escape' && showModal) {
-        setShowModal(false);
-        setNewChannelName('');
-      }
-    };
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [showModal]);
-
   const handleSendMessage = async (e) => {
     e.preventDefault();
     if (!messageText.trim() || !activeChannel) return;
@@ -105,8 +100,7 @@ const HomePage = () => {
 
     try {
       await axios.post('/api/v1/channels', { name: newChannelName.trim() });
-      setShowModal(false);
-      setNewChannelName('');
+      closeModal();
       setNotification('Канал создан');
       setTimeout(() => setNotification(''), 3000);
     } catch (err) {
@@ -114,8 +108,7 @@ const HomePage = () => {
     }
   };
 
-  if (status === 'loading')
-    return <div className="loading">Загрузка чата...</div>;
+  if (status === 'loading') return <div className="loading">Загрузка чата...</div>;
   if (error) return <div className="error">Ошибка загрузки: {error}</div>;
 
   return (
@@ -125,7 +118,7 @@ const HomePage = () => {
         <div className="sidebar-header">
           <span>Каналы</span>
           <button
-            onClick={() => setShowModal(true)}
+            onClick={openModal}
             className="add-channel-btn"
             aria-label="Добавить канал"
             type="button"
@@ -157,10 +150,7 @@ const HomePage = () => {
           <div className="chat-header">
             <span>#{activeChannel.name}</span>
             <span className="message-count">
-              {
-                messages.filter((m) => m.channelId === activeChannel.id).length
-              }{' '}
-              сообщений
+              {messages.filter((m) => m.channelId === activeChannel.id).length} сообщений
             </span>
           </div>
 
@@ -203,8 +193,7 @@ const HomePage = () => {
           className="modal-overlay"
           onClick={(e) => {
             if (e.target.classList.contains('modal-overlay')) {
-              setShowModal(false);
-              setNewChannelName('');
+              closeModal();
             }
           }}
         >
@@ -213,10 +202,7 @@ const HomePage = () => {
               type="button"
               aria-label="Закрыть"
               className="modal-close"
-              onClick={() => {
-                setShowModal(false);
-                setNewChannelName('');
-              }}
+              onClick={closeModal}
             >
               ×
             </button>
@@ -232,11 +218,7 @@ const HomePage = () => {
                 autoFocus
               />
               <div className="modal-actions">
-                <button
-                  type="button"
-                  onClick={() => setShowModal(false)}
-                  className="btn-cancel"
-                >
+                <button type="button" onClick={closeModal} className="btn-cancel">
                   Отменить
                 </button>
                 <button type="submit" className="btn-submit">
