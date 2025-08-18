@@ -42,7 +42,7 @@ const AddChannelModal = () => {
           dispatch(closeModal());
           resetForm();
 
-          toast.success('Канал создан');  
+          toast.success(t('toast.channelCreated'));   
         } else {
           setErrors({ name: t('errors.network') });
         }
