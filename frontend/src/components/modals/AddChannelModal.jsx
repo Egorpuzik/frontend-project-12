@@ -32,7 +32,7 @@ const AddChannelModal = () => {
         .max(20, 'От 3 до 20 символов')
         .notOneOf(existingChannelNames, 'Такой канал уже существует'),
     }),
-    onSubmit: async ({ name }, { setSubmitting, setErrors, resetForm }) => {
+    onSubmit: ({ name }, { setSubmitting, setErrors, resetForm }) => {
       const cleanedName = filterProfanity(name.trim());
 
       socket.emit('newChannel', { name: cleanedName }, (response) => {
@@ -40,7 +40,6 @@ const AddChannelModal = () => {
           dispatch(setCurrentChannelId(response.data.id));
           dispatch(closeModal());
           resetForm();
-
           toast.success(t('toast.channelCreated'));
         } else {
           setErrors({ name: t('errors.network') });
@@ -66,7 +65,7 @@ const AddChannelModal = () => {
           </div>
           <div className="modal-body">
             <form onSubmit={formik.handleSubmit}>
-              <div className="form-group">
+              <div className="mb-3">
                 <label htmlFor="channelName" className="form-label">
                   {t('modals.channelName')}
                 </label>
