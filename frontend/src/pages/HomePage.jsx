@@ -5,6 +5,10 @@ import { fetchChatData, newMessage, addChannel, removeChannel, renameChannel } f
 import { getSocket } from '../utils/socket.js';
 import { useAuth } from '../contexts/AuthContext.jsx';
 import { toast } from 'react-toastify';
+import { openModal } from '../store/modalsSlice.js'; 
+import AddChannelModal from '../components/modals/AddChannelModal.jsx';
+import RemoveChannelModal from '../components/modals/RemoveChannelModal.jsx';
+import RenameChannelModal from '../components/modals/RenameChannelModal.jsx';
 import './HomePage.css';
 
 const HomePage = () => {
@@ -16,17 +20,9 @@ const HomePage = () => {
   const [messageText, setMessageText] = useState('');
   const [disconnected, setDisconnected] = useState(false);
   const [activeChannel, setActiveChannel] = useState(null);
-  const [showModal, setShowModal] = useState(false);
-  const [newChannelName, setNewChannelName] = useState('');
 
   const messagesEndRef = useRef(null);
   const messageInputRef = useRef(null);
-
-  const openModal = () => setShowModal(true);
-  const closeModal = () => {
-    setShowModal(false);
-    setNewChannelName('');
-  };
 
   useEffect(() => {
     dispatch(fetchChatData());
@@ -77,14 +73,6 @@ const HomePage = () => {
     messageInputRef.current?.focus();
   }, [activeChannel]);
 
-  useEffect(() => {
-    console.log('Сообщения обновились:', messages);
-  }, [messages]);
-
-  useEffect(() => {
-    console.log('Каналы обновились:', channels);
-  }, [channels]);
-
   const handleSendMessage = async (e) => {
     e.preventDefault();
     if (!messageText.trim() || !activeChannel) return;
@@ -103,20 +91,6 @@ const HomePage = () => {
     }
   };
 
-  const handleAddChannel = async (e) => {
-    e.preventDefault();
-    if (!newChannelName.trim()) return;
-
-    try {
-      await axios.post('/api/v1/channels', { name: newChannelName.trim() });
-      closeModal();
-      toast.success('Канал создан');
-    } catch (err) {
-      console.error('Ошибка добавления канала:', err);
-      toast.error('Ошибка соединения');
-    }
-  };
-
   if (status === 'loading')
     return <div className="loading">Загрузка чата...</div>;
   if (error) return <div className="error">Ошибка загрузки: {error}</div>;
@@ -128,8 +102,8 @@ const HomePage = () => {
         <div className="sidebar-header">
           <span>Каналы</span>
           <button
-            onClick={openModal}
-            className="add-channel-btn"
+            onClick={() => dispatch(openModal({ type: 'addChannel' }))} 
+            className="btn btn-outline-primary btn-sm"
             aria-label="Добавить канал"
             type="button"
           >
@@ -195,52 +169,10 @@ const HomePage = () => {
         <div className="chat-placeholder">Выберите канал</div>
       )}
 
-      {/* Модалка добавления канала */}
-      {showModal && (
-        <div
-          className="modal-overlay"
-          onClick={(e) => {
-            if (e.target.classList.contains('modal-overlay')) {
-              closeModal();
-            }
-          }}
-        >
-          <div className="modal" onClick={(e) => e.stopPropagation()}>
-            <button
-              type="button"
-              aria-label="Закрыть"
-              className="modal-close"
-              onClick={closeModal}
-            >
-              ×
-            </button>
-            <h3>Добавить канал</h3>
-            <form onSubmit={handleAddChannel}>
-              <label htmlFor="newChannel">Имя канала</label>
-              <input
-                id="newChannel"
-                type="text"
-                value={newChannelName}
-                onChange={(e) => setNewChannelName(e.target.value)}
-                placeholder="Введите имя канала"
-                autoFocus
-              />
-              <div className="modal-actions">
-                <button
-                  type="button"
-                  onClick={closeModal}
-                  className="btn-cancel"
-                >
-                  Отменить
-                </button>
-                <button type="submit" className="btn-submit">
-                  Отправить
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
+      {/* Bootstrap-модалки */}
+      <AddChannelModal />
+      <RemoveChannelModal />
+      <RenameChannelModal />
     </div>
   );
 };
