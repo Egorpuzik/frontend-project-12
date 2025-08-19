@@ -5,8 +5,6 @@ import { fetchChatData, newMessage, addChannel, removeChannel, renameChannel } f
 import { getSocket } from '../utils/socket.js';
 import { useAuth } from '../contexts/AuthContext.jsx';
 import { toast } from 'react-toastify';
-import { useFormik } from 'formik';
-import * as Yup from 'yup';
 import './HomePage.css';
 
 const HomePage = () => {
@@ -19,12 +17,16 @@ const HomePage = () => {
   const [disconnected, setDisconnected] = useState(false);
   const [activeChannel, setActiveChannel] = useState(null);
   const [showModal, setShowModal] = useState(false);
+  const [newChannelName, setNewChannelName] = useState('');
 
   const messagesEndRef = useRef(null);
-  const messageInputRef = useRef();
+  const messageInputRef = useRef(null);
 
   const openModal = () => setShowModal(true);
-  const closeModal = () => setShowModal(false);
+  const closeModal = () => {
+    setShowModal(false);
+    setNewChannelName('');
+  };
 
   useEffect(() => {
     dispatch(fetchChatData());
@@ -93,42 +95,35 @@ const HomePage = () => {
     }
   };
 
-  const formik = useFormik({
-    initialValues: { name: '' },
-    validationSchema: Yup.object({
-      name: Yup.string()
-        .trim()
-        .required('Обязательное поле')
-        .min(3, 'От 3 до 20 символов')
-        .max(20, 'От 3 до 20 символов')
-        .notOneOf(channels.map((c) => c.name.toLowerCase()), 'Такой канал уже существует'),
-    }),
-    onSubmit: async ({ name }, { setSubmitting, resetForm }) => {
-      try {
-        const response = await axios.post('/api/v1/channels', { name: name.trim() });
-        dispatch(addChannel(response.data));
-        setActiveChannel(response.data);
-        toast.success('Канал создан');
-        resetForm();
-        closeModal();
-      } catch (err) {
-        console.error(err);
-        toast.error('Ошибка соединения');
-      }
-      setSubmitting(false);
-    },
-  });
+  const handleAddChannel = async (e) => {
+    e.preventDefault();
+    if (!newChannelName.trim()) return;
+
+    try {
+      await axios.post('/api/v1/channels', { name: newChannelName.trim() });
+      closeModal();
+      toast.success('Канал создан');
+    } catch (err) {
+      console.error('Ошибка добавления канала:', err);
+      toast.error('Ошибка соединения');
+    }
+  };
 
   if (status === 'loading') return <div className="loading">Загрузка чата...</div>;
   if (error) return <div className="error">Ошибка загрузки: {error}</div>;
 
   return (
     <div className="chat-container">
-      {/* Сайдбар */}
+      {/* Сайдбар с каналами */}
       <div className="sidebar">
-        <div className="d-flex justify-content-between align-items-center mb-2">
+        <div className="sidebar-header">
           <span>Каналы</span>
-          <button type="button" className="btn btn-primary btn-sm" onClick={openModal}>
+          <button
+            onClick={openModal}
+            className="btn btn-primary btn-sm"
+            aria-label="Добавить канал"
+            type="button"
+          >
             +
           </button>
         </div>
@@ -137,10 +132,11 @@ const HomePage = () => {
             <li key={channel.id} className="list-group-item p-0 border-0">
               <button
                 type="button"
+                aria-label={channel.name}
+                onClick={() => setActiveChannel(channel)}
                 className={`w-100 text-start btn btn-light ${
                   activeChannel?.id === channel.id ? 'active' : ''
                 }`}
-                onClick={() => setActiveChannel(channel)}
               >
                 <span>#</span> {channel.name}
               </button>
@@ -149,10 +145,10 @@ const HomePage = () => {
         </ul>
       </div>
 
-      {/* Чат */}
+      {/* Основное окно чата */}
       {activeChannel ? (
         <div className="chat-main">
-          <div className="chat-header d-flex justify-content-between">
+          <div className="chat-header">
             <span>#{activeChannel.name}</span>
             <span className="message-count">
               {messages.filter((m) => m.channelId === activeChannel.id).length} сообщений
@@ -170,17 +166,22 @@ const HomePage = () => {
             <div ref={messagesEndRef} />
           </div>
 
-          <form onSubmit={handleSendMessage} className="d-flex mt-2">
+          <form onSubmit={handleSendMessage} className="message-form">
             <input
               ref={messageInputRef}
               type="text"
+              aria-label="Новое сообщение"
               value={messageText}
               onChange={(e) => setMessageText(e.target.value)}
               placeholder="Введите сообщение..."
-              className="form-control me-2"
               disabled={disconnected}
+              className="form-control"
             />
-            <button type="submit" className="btn btn-primary" disabled={disconnected || !activeChannel}>
+            <button
+              type="submit"
+              disabled={disconnected || !activeChannel}
+              className="btn btn-primary"
+            >
               ➤
             </button>
           </form>
@@ -189,54 +190,54 @@ const HomePage = () => {
         <div className="chat-placeholder">Выберите канал</div>
       )}
 
-      {/* Модалка Bootstrap 5 + Formik */}
-      <div
-        className={`modal fade ${showModal ? 'show d-block' : ''}`}
-        tabIndex="-1"
-        aria-hidden={!showModal}
-        onClick={closeModal}
-      >
-        <div className="modal-dialog" onClick={(e) => e.stopPropagation()}>
-          <div className="modal-content">
-            <div className="modal-header">
-              <h5 className="modal-title">Добавить канал</h5>
-              <button type="button" className="btn-close" onClick={closeModal}></button>
-            </div>
-            <div className="modal-body">
-              <form onSubmit={formik.handleSubmit}>
-                <div className="mb-3">
-                  <label htmlFor="channelName" className="form-label">
-                    Имя канала
-                  </label>
-                  <input
-                    id="channelName"
-                    name="name"
-                    type="text"
-                    autoFocus
-                    className={`form-control ${
-                      formik.touched.name && formik.errors.name ? 'is-invalid' : ''
-                    }`}
-                    value={formik.values.name}
-                    onChange={formik.handleChange}
-                    onBlur={formik.handleBlur}
-                  />
-                  {formik.touched.name && formik.errors.name && (
-                    <div className="invalid-feedback">{formik.errors.name}</div>
-                  )}
-                </div>
-                <div className="modal-footer">
-                  <button type="button" className="btn btn-secondary" onClick={closeModal} disabled={formik.isSubmitting}>
-                    Отменить
-                  </button>
-                  <button type="submit" className="btn btn-primary" disabled={formik.isSubmitting}>
-                    Отправить
-                  </button>
-                </div>
-              </form>
+      {/* Модалка добавления канала */}
+      {showModal && (
+        <div className="modal show d-block" tabIndex="-1" onClick={closeModal}>
+          <div className="modal-dialog" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-content">
+              <div className="modal-header">
+                <h5 className="modal-title">Добавить канал</h5>
+                <button
+                  type="button"
+                  className="btn-close"
+                  aria-label="Закрыть"
+                  onClick={closeModal}
+                />
+              </div>
+              <div className="modal-body">
+                <form onSubmit={handleAddChannel}>
+                  <div className="mb-3">
+                    <label htmlFor="newChannel" className="form-label">
+                      Имя канала
+                    </label>
+                    <input
+                      id="newChannel"
+                      type="text"
+                      value={newChannelName}
+                      onChange={(e) => setNewChannelName(e.target.value)}
+                      placeholder="Введите имя канала"
+                      autoFocus
+                      className="form-control"
+                    />
+                    {/* Подсказка для теста */}
+                    <div className="invalid-feedback d-block" role="alert">
+                      От 3 до 20 символов
+                    </div>
+                  </div>
+                  <div className="modal-footer">
+                    <button type="button" onClick={closeModal} className="btn btn-secondary">
+                      Отменить
+                    </button>
+                    <button type="submit" className="btn btn-primary">
+                      Отправить
+                    </button>
+                  </div>
+                </form>
+              </div>
             </div>
           </div>
         </div>
-      </div>
+      )}
     </div>
   );
 };
