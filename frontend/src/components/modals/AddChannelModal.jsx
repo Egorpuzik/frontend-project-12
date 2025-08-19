@@ -7,8 +7,7 @@ import { closeModal } from '../../store/modalsSlice.js';
 import { useSocket } from '../../hooks/index.js';
 import { setCurrentChannelId } from '../../store/channelsSlice.js';
 import filterProfanity from '../../utils/filterProfanity.js';
-import { toast } from 'react-toastify';   
-import './CustomModal.css';
+import { toast } from 'react-toastify';
 
 const AddChannelModal = () => {
   const { t } = useTranslation();
@@ -31,7 +30,7 @@ const AddChannelModal = () => {
         .required('Обязательное поле')
         .min(3, 'От 3 до 20 символов')
         .max(20, 'От 3 до 20 символов')
-        .notOneOf(existingChannelNames, 'Такой канал уже существует')
+        .notOneOf(existingChannelNames, 'Такой канал уже существует'),
     }),
     onSubmit: async ({ name }, { setSubmitting, setErrors, resetForm }) => {
       const cleanedName = filterProfanity(name.trim());
@@ -42,7 +41,7 @@ const AddChannelModal = () => {
           dispatch(closeModal());
           resetForm();
 
-          toast.success(t('toast.channelCreated'));   
+          toast.success(t('toast.channelCreated'));
         } else {
           setErrors({ name: t('errors.network') });
         }
@@ -52,42 +51,61 @@ const AddChannelModal = () => {
   });
 
   return (
-    <div className="custom-modal-overlay">
-      <div className="custom-modal">
-        <div className="custom-modal-header">
-          <h3>{t('modals.add')}</h3>
-          <button onClick={() => dispatch(closeModal())} className="close-btn">×</button>
-        </div>
-        <form onSubmit={formik.handleSubmit}>
-          <label>{t('modals.channelName')}</label>
-          <input
-            ref={inputRef}
-            name="name"
-            value={formik.values.name}
-            onChange={formik.handleChange}
-            disabled={formik.isSubmitting}
-            autoComplete="off"
-            className={formik.touched.name && formik.errors.name ? 'input-error' : ''}
-          />
-          {formik.touched.name && formik.errors.name && (
-            <div className="error-text">{formik.errors.name}</div>
-          )}
-          <div className="modal-actions">
+    <div className="modal show d-block" tabIndex="-1" role="dialog">
+      <div className="modal-dialog modal-dialog-centered" role="document">
+        <div className="modal-content">
+          <div className="modal-header">
+            <h5 className="modal-title">{t('modals.add')}</h5>
             <button
               type="button"
+              className="btn-close"
+              aria-label="Close"
               onClick={() => dispatch(closeModal())}
               disabled={formik.isSubmitting}
-            >
-              {t('cancel')}
-            </button>
-            <button
-              type="submit"
-              disabled={formik.isSubmitting}
-            >
-              {t('submit')}
-            </button>
+            />
           </div>
-        </form>
+          <div className="modal-body">
+            <form onSubmit={formik.handleSubmit}>
+              <div className="form-group">
+                <label htmlFor="channelName" className="form-label">
+                  {t('modals.channelName')}
+                </label>
+                <input
+                  id="channelName"
+                  ref={inputRef}
+                  name="name"
+                  type="text"
+                  className={`form-control ${formik.touched.name && formik.errors.name ? 'is-invalid' : ''}`}
+                  value={formik.values.name}
+                  onChange={formik.handleChange}
+                  onBlur={formik.handleBlur}
+                  disabled={formik.isSubmitting}
+                  autoComplete="off"
+                />
+                {formik.touched.name && formik.errors.name && (
+                  <div className="invalid-feedback">{formik.errors.name}</div>
+                )}
+              </div>
+              <div className="modal-footer">
+                <button
+                  type="button"
+                  className="btn btn-secondary"
+                  onClick={() => dispatch(closeModal())}
+                  disabled={formik.isSubmitting}
+                >
+                  {t('cancel')}
+                </button>
+                <button
+                  type="submit"
+                  className="btn btn-primary"
+                  disabled={formik.isSubmitting}
+                >
+                  {t('submit')}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
       </div>
     </div>
   );
