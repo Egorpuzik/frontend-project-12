@@ -177,7 +177,11 @@ const HomePage = () => {
               disabled={disconnected}
               className="form-control"
             />
-            <button type="submit" disabled={disconnected || !activeChannel} className="btn btn-primary">
+            <button
+              type="submit"
+              disabled={disconnected || !activeChannel}
+              className="btn btn-primary"
+            >
               ➤
             </button>
           </form>
@@ -186,7 +190,7 @@ const HomePage = () => {
         <div className="chat-placeholder">Выберите канал</div>
       )}
 
-      {/* Модалка добавления канала (Bootstrap) */}
+      {/* Модалка добавления канала */}
       {showModal && (
         <div className="modal show d-block" tabIndex="-1" onClick={closeModal}>
           <div className="modal-dialog" onClick={(e) => e.stopPropagation()}>
@@ -198,7 +202,7 @@ const HomePage = () => {
                   className="btn-close"
                   aria-label="Закрыть"
                   onClick={closeModal}
-                ></button>
+                />
               </div>
               <div className="modal-body">
                 <form onSubmit={handleAddChannel}>
@@ -216,7 +220,7 @@ const HomePage = () => {
                       className="form-control"
                     />
                     {/* Подсказка для теста */}
-                    <div className="invalid-feedback d-block">
+                    <div className="invalid-feedback d-block" role="alert">
                       От 3 до 20 символов
                     </div>
                   </div>
