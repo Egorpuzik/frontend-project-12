@@ -78,11 +78,11 @@ const HomePage = () => {
   }, [activeChannel]);
 
   useEffect(() => {
-    console.log('📩 Сообщения обновились:', messages);
+    console.log('Сообщения обновились:', messages);
   }, [messages]);
 
   useEffect(() => {
-    console.log('📡 Каналы обновились:', channels);
+    console.log('Каналы обновились:', channels);
   }, [channels]);
 
   const handleSendMessage = async (e) => {
