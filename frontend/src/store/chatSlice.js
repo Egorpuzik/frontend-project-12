@@ -40,6 +40,7 @@ const chatSlice = createSlice({
     currentChannelId: null,
     status: 'idle',
     error: null,
+    lastAddedChannelId: null,
   },
   reducers: {
     newMessage: (state, action) => {
@@ -50,6 +51,7 @@ const chatSlice = createSlice({
     },
     addChannel: (state, action) => {
       state.channels.push(action.payload);
+      state.lastAddedChannelId = action.payload.id;
     },
     removeChannel: (state, action) => {
       const id = action.payload;
