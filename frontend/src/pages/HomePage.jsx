@@ -109,8 +109,7 @@ const HomePage = () => {
     }
   };
 
-  if (status === 'loading')
-    return <div className="loading">Загрузка чата...</div>;
+  if (status === 'loading') return <div className="loading">Загрузка чата...</div>;
   if (error) return <div className="error">Ошибка загрузки: {error}</div>;
 
   return (
@@ -152,8 +151,7 @@ const HomePage = () => {
           <div className="chat-header">
             <span>#{activeChannel.name}</span>
             <span className="message-count">
-              {messages.filter((m) => m.channelId === activeChannel.id).length}{' '}
-              сообщений
+              {messages.filter((m) => m.channelId === activeChannel.id).length} сообщений
             </span>
           </div>
 
@@ -191,10 +189,7 @@ const HomePage = () => {
       {/* Модалка добавления канала (Bootstrap) */}
       {showModal && (
         <div className="modal show d-block" tabIndex="-1" onClick={closeModal}>
-          <div
-            className="modal-dialog"
-            onClick={(e) => e.stopPropagation()}
-          >
+          <div className="modal-dialog" onClick={(e) => e.stopPropagation()}>
             <div className="modal-content">
               <div className="modal-header">
                 <h5 className="modal-title">Добавить канал</h5>
@@ -220,13 +215,13 @@ const HomePage = () => {
                       autoFocus
                       className="form-control"
                     />
+                    {/* Подсказка для теста */}
+                    <div className="invalid-feedback d-block">
+                      От 3 до 20 символов
+                    </div>
                   </div>
                   <div className="modal-footer">
-                    <button
-                      type="button"
-                      onClick={closeModal}
-                      className="btn btn-secondary"
-                    >
+                    <button type="button" onClick={closeModal} className="btn btn-secondary">
                       Отменить
                     </button>
                     <button type="submit" className="btn btn-primary">
