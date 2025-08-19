@@ -10,7 +10,8 @@ import './HomePage.css';
 const HomePage = () => {
   const dispatch = useDispatch();
   const { user } = useAuth();
-  const { channels = [], messages = [], status = 'idle', error } = useSelector((state) => state.chat || {});
+  const { channels = [], messages = [], status = 'idle', error } =
+    useSelector((state) => state.chat || {});
 
   const [messageText, setMessageText] = useState('');
   const [disconnected, setDisconnected] = useState(false);
@@ -76,6 +77,14 @@ const HomePage = () => {
     messageInputRef.current?.focus();
   }, [activeChannel]);
 
+  useEffect(() => {
+    console.log('📩 Сообщения обновились:', messages);
+  }, [messages]);
+
+  useEffect(() => {
+    console.log('📡 Каналы обновились:', channels);
+  }, [channels]);
+
   const handleSendMessage = async (e) => {
     e.preventDefault();
     if (!messageText.trim() || !activeChannel) return;
@@ -108,7 +117,8 @@ const HomePage = () => {
     }
   };
 
-  if (status === 'loading') return <div className="loading">Загрузка чата...</div>;
+  if (status === 'loading')
+    return <div className="loading">Загрузка чата...</div>;
   if (error) return <div className="error">Ошибка загрузки: {error}</div>;
 
   return (
@@ -133,7 +143,9 @@ const HomePage = () => {
                 type="button"
                 aria-label={channel.name}
                 onClick={() => setActiveChannel(channel)}
-                className={`channel-btn ${activeChannel?.id === channel.id ? 'active' : ''}`}
+                className={`channel-btn ${
+                  activeChannel?.id === channel.id ? 'active' : ''
+                }`}
               >
                 <span>#</span> {channel.name}
               </button>
@@ -148,7 +160,8 @@ const HomePage = () => {
           <div className="chat-header">
             <span>#{activeChannel.name}</span>
             <span className="message-count">
-              {messages.filter((m) => m.channelId === activeChannel.id).length} сообщений
+              {messages.filter((m) => m.channelId === activeChannel.id).length}{' '}
+              сообщений
             </span>
           </div>
 
@@ -213,7 +226,11 @@ const HomePage = () => {
                 autoFocus
               />
               <div className="modal-actions">
-                <button type="button" onClick={closeModal} className="btn-cancel">
+                <button
+                  type="button"
+                  onClick={closeModal}
+                  className="btn-cancel"
+                >
                   Отменить
                 </button>
                 <button type="submit" className="btn-submit">
