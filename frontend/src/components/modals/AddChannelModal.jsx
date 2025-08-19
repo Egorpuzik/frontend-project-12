@@ -28,10 +28,10 @@ const AddChannelModal = () => {
     validationSchema: Yup.object({
       name: Yup.string()
         .trim()
-        .required(t('errors.required'))
-        .min(3, t('errors.min', { min: 3 }))
-        .max(20, t('errors.max', { max: 20 }))
-        .notOneOf(existingChannelNames, t('errors.channelExists')),
+        .required('Обязательное поле')
+        .min(3, 'От 3 до 20 символов')
+        .max(20, 'От 3 до 20 символов')
+        .notOneOf(existingChannelNames, 'Такой канал уже существует')
     }),
     onSubmit: async ({ name }, { setSubmitting, setErrors, resetForm }) => {
       const cleanedName = filterProfanity(name.trim());

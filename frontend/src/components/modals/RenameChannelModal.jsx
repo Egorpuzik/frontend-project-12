@@ -22,9 +22,10 @@ const RenameChannelModal = () => {
     validationSchema: Yup.object({
       name: Yup.string()
         .trim()
-        .min(3, 'Имя канала должно содержать минимум 3 символа')
-        .max(20, 'Имя канала не может превышать 20 символов')
-        .required('Поле обязательно для заполнения')
+        .min(3, 'От 3 до 20 символов')
+        .max(20, 'От 3 до 20 символов')
+        .required('Обязательное поле')
+
         .notOneOf(existingNames, 'Такой канал уже существует'),
     }),
     onSubmit: (values, { setSubmitting, resetForm }) => {
