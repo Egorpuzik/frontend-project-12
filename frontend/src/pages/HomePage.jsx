@@ -5,10 +5,6 @@ import { fetchChatData, newMessage, addChannel, removeChannel, renameChannel } f
 import { getSocket } from '../utils/socket.js';
 import { useAuth } from '../contexts/AuthContext.jsx';
 import { toast } from 'react-toastify';
-import { openModal } from '../store/modalsSlice.js'; 
-import AddChannelModal from '../components/modals/AddChannelModal.jsx';
-import RemoveChannelModal from '../components/modals/RemoveChannelModal.jsx';
-import RenameChannelModal from '../components/modals/RenameChannelModal.jsx';
 import './HomePage.css';
 
 const HomePage = () => {
@@ -20,9 +16,17 @@ const HomePage = () => {
   const [messageText, setMessageText] = useState('');
   const [disconnected, setDisconnected] = useState(false);
   const [activeChannel, setActiveChannel] = useState(null);
+  const [showModal, setShowModal] = useState(false);
+  const [newChannelName, setNewChannelName] = useState('');
 
   const messagesEndRef = useRef(null);
   const messageInputRef = useRef(null);
+
+  const openModal = () => setShowModal(true);
+  const closeModal = () => {
+    setShowModal(false);
+    setNewChannelName('');
+  };
 
   useEffect(() => {
     dispatch(fetchChatData());
@@ -91,6 +95,20 @@ const HomePage = () => {
     }
   };
 
+  const handleAddChannel = async (e) => {
+    e.preventDefault();
+    if (!newChannelName.trim()) return;
+
+    try {
+      await axios.post('/api/v1/channels', { name: newChannelName.trim() });
+      closeModal();
+      toast.success('Канал создан');
+    } catch (err) {
+      console.error('Ошибка добавления канала:', err);
+      toast.error('Ошибка соединения');
+    }
+  };
+
   if (status === 'loading')
     return <div className="loading">Загрузка чата...</div>;
   if (error) return <div className="error">Ошибка загрузки: {error}</div>;
@@ -102,22 +120,22 @@ const HomePage = () => {
         <div className="sidebar-header">
           <span>Каналы</span>
           <button
-            onClick={() => dispatch(openModal({ type: 'addChannel' }))} 
-            className="btn btn-outline-primary btn-sm"
+            onClick={openModal}
+            className="btn btn-primary btn-sm"
             aria-label="Добавить канал"
             type="button"
           >
             +
           </button>
         </div>
-        <ul className="channel-list">
+        <ul className="list-group channel-list">
           {channels.map((channel) => (
-            <li key={channel.id}>
+            <li key={channel.id} className="list-group-item p-0 border-0">
               <button
                 type="button"
                 aria-label={channel.name}
                 onClick={() => setActiveChannel(channel)}
-                className={`channel-btn ${
+                className={`w-100 text-start btn btn-light ${
                   activeChannel?.id === channel.id ? 'active' : ''
                 }`}
               >
@@ -159,8 +177,9 @@ const HomePage = () => {
               onChange={(e) => setMessageText(e.target.value)}
               placeholder="Введите сообщение..."
               disabled={disconnected}
+              className="form-control"
             />
-            <button type="submit" disabled={disconnected || !activeChannel}>
+            <button type="submit" disabled={disconnected || !activeChannel} className="btn btn-primary">
               ➤
             </button>
           </form>
@@ -169,10 +188,57 @@ const HomePage = () => {
         <div className="chat-placeholder">Выберите канал</div>
       )}
 
-      {/* Bootstrap-модалки */}
-      <AddChannelModal />
-      <RemoveChannelModal />
-      <RenameChannelModal />
+      {/* Модалка добавления канала (Bootstrap) */}
+      {showModal && (
+        <div className="modal show d-block" tabIndex="-1" onClick={closeModal}>
+          <div
+            className="modal-dialog"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="modal-content">
+              <div className="modal-header">
+                <h5 className="modal-title">Добавить канал</h5>
+                <button
+                  type="button"
+                  className="btn-close"
+                  aria-label="Закрыть"
+                  onClick={closeModal}
+                ></button>
+              </div>
+              <div className="modal-body">
+                <form onSubmit={handleAddChannel}>
+                  <div className="mb-3">
+                    <label htmlFor="newChannel" className="form-label">
+                      Имя канала
+                    </label>
+                    <input
+                      id="newChannel"
+                      type="text"
+                      value={newChannelName}
+                      onChange={(e) => setNewChannelName(e.target.value)}
+                      placeholder="Введите имя канала"
+                      autoFocus
+                      className="form-control"
+                    />
+                  </div>
+                  <div className="modal-footer">
+                    <button
+                      type="button"
+                      onClick={closeModal}
+                      className="btn btn-secondary"
+                    >
+                      Отменить
+                    </button>
+                    <button type="submit" className="btn btn-primary">
+                      Отправить
+                    </button>
+                  </div>
+                </form>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
