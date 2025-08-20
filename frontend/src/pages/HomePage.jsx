@@ -19,7 +19,7 @@ const HomePage = () => {
   const [disconnected, setDisconnected] = useState(false);
   const [activeChannel, setActiveChannel] = useState(null);
   const [showModal, setShowModal] = useState(false);
-  const [channelToRename, setChannelToRename] = useState(null);
+  const [channelToEdit, setChannelToEdit] = useState(null);
 
   const messagesEndRef = useRef(null);
   const messageInputRef = useRef(null);
@@ -28,7 +28,7 @@ const HomePage = () => {
   const closeModal = () => {
     setShowModal(false);
     formik.resetForm();
-    setChannelToRename(null);
+    setChannelToEdit(null);
   };
 
   useEffect(() => {
@@ -98,10 +98,23 @@ const HomePage = () => {
     }
   };
 
-  const handleOpenRename = (channel) => {
-    setChannelToRename(channel);
+  const handleOpenEdit = (channel) => {
+    setChannelToEdit(channel);
     formik.setFieldValue('name', channel.name);
-    setShowModal(true);
+    openModal();
+  };
+
+  const handleDeleteChannel = async () => {
+    if (!channelToEdit) return;
+    try {
+      await axios.delete(`/api/v1/channels/${channelToEdit.id}`);
+      dispatch(removeChannel(channelToEdit.id));
+      toast.success('Канал удалён');
+      closeModal();
+    } catch (err) {
+      console.error('Ошибка удаления канала:', err);
+      toast.error('Ошибка удаления');
+    }
   };
 
   const formik = useFormik({
@@ -115,8 +128,8 @@ const HomePage = () => {
         .test('unique', 'Такой канал уже существует', (value) => {
           if (!value) return false;
           const existing = channels.map((c) => c.name.toLowerCase());
-          if (channelToRename) {
-            existing.splice(existing.indexOf(channelToRename.name.toLowerCase()), 1);
+          if (channelToEdit) {
+            existing.splice(existing.indexOf(channelToEdit.name.toLowerCase()), 1);
           }
           return !existing.includes(value.toLowerCase());
         }),
@@ -125,8 +138,8 @@ const HomePage = () => {
     validateOnBlur: true,
     onSubmit: async ({ name }, { setSubmitting, setErrors, resetForm }) => {
       try {
-        if (channelToRename) {
-          await axios.patch(`/api/v1/channels/${channelToRename.id}`, { name: name.trim() });
+        if (channelToEdit) {
+          await axios.patch(`/api/v1/channels/${channelToEdit.id}`, { name: name.trim() });
           toast.success('Канал переименован');
         } else {
           await axios.post('/api/v1/channels', { name: name.trim() });
@@ -152,7 +165,7 @@ const HomePage = () => {
         <div className="sidebar-header">
           <span>Каналы</span>
           <button
-            onClick={() => { setChannelToRename(null); openModal(); }}
+            onClick={() => { setChannelToEdit(null); openModal(); }}
             className="btn btn-primary btn-sm"
             aria-label="Добавить канал"
             type="button"
@@ -180,7 +193,7 @@ const HomePage = () => {
                 type="button"
                 aria-label="Управление каналом"
                 className="btn btn-outline-secondary btn-sm ms-1"
-                onClick={() => handleOpenRename(channel)}
+                onClick={() => handleOpenEdit(channel)}
               >
                 Управление каналом
               </button>
@@ -234,7 +247,7 @@ const HomePage = () => {
           <div className="modal-dialog" onClick={(e) => e.stopPropagation()}>
             <div className="modal-content">
               <div className="modal-header">
-                <h5 className="modal-title">{channelToRename ? 'Переименовать канал' : 'Добавить канал'}</h5>
+                <h5 className="modal-title">{channelToEdit ? 'Переименовать канал' : 'Добавить канал'}</h5>
                 <button type="button" className="btn-close" aria-label="Закрыть" onClick={closeModal} />
               </div>
               <div className="modal-body">
@@ -260,7 +273,14 @@ const HomePage = () => {
                   </div>
                   <div className="modal-footer">
                     <button type="button" onClick={closeModal} className="btn btn-secondary">Отменить</button>
-                    <button type="submit" className="btn btn-primary" disabled={formik.isSubmitting}>Отправить</button>
+                    {channelToEdit && (
+                      <button type="button" onClick={handleDeleteChannel} className="btn btn-danger">
+                        Удалить
+                      </button>
+                    )}
+                    <button type="submit" className="btn btn-primary" disabled={formik.isSubmitting}>
+                      Отправить
+                    </button>
                   </div>
                 </form>
               </div>
