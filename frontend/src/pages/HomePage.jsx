@@ -166,29 +166,33 @@ const HomePage = () => {
           </button>
         </div>
         <ul className="list-group channel-list">
-          {channels.map((channel) => (
-            <li key={channel.id} className="list-group-item p-0 border-0 d-flex justify-content-between align-items-center">
-              <button
-                type="button"
-                aria-label={filter.clean(channel.name)}
-                onClick={() => setActiveChannel(channel)}
-                className={`w-100 text-start btn btn-light ${
-                  activeChannel?.id === channel.id ? 'active' : ''
-                }`}
-              >
-                <span>#</span> {filter.clean(channel.name)}
-              </button>
-              <button
-                type="button"
-                aria-label="Управление каналом"
-                className="btn btn-outline-secondary btn-sm ms-1"
-                onClick={() => handleOpenRename(channel)}
-              >
-                ⋮
-              </button>
-            </li>
-          ))}
-        </ul>
+        {channels.map((channel) => (
+    <li
+      key={channel.id}
+      className="list-group-item p-0 border-0 d-flex justify-content-between align-items-center"
+    >
+      <button
+        type="button"
+        aria-label={filter.clean(channel.name)}
+        onClick={() => setActiveChannel(channel)}
+        className={`w-100 text-start btn btn-light ${
+          activeChannel?.id === channel.id ? 'active' : ''
+        }`}
+      >
+        <span>#</span> {filter.clean(channel.name)}
+      </button>
+      <button
+        type="button"
+        aria-label="Управление каналом"
+        className="btn btn-outline-secondary btn-sm ms-1"
+        onClick={() => handleOpenRename(channel)}
+      >
+        Управление каналом
+      </button>
+    </li>
+  ))}
+</ul>
+
       </div>
 
       {activeChannel ? (
