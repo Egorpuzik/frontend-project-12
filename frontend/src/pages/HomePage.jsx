@@ -183,9 +183,7 @@ const HomePage = () => {
                 type="button"
                 aria-label={filter.clean(channel.name)}
                 onClick={() => setActiveChannel(channel)}
-                className={`w-100 text-start btn btn-light ${
-                  activeChannel?.id === channel.id ? 'active' : ''
-                }`}
+                className={`w-100 text-start btn btn-light ${activeChannel?.id === channel.id ? 'active' : ''}`}
               >
                 <span>#</span> {filter.clean(channel.name)}
               </button>
@@ -243,7 +241,7 @@ const HomePage = () => {
       )}
 
       {showModal && (
-        <div className="modal show d-block" tabIndex="-1" onClick={closeModal}>
+        <div key={channelToEdit?.id || 'new'} className="modal show d-block" tabIndex="-1" onClick={closeModal}>
           <div className="modal-dialog" onClick={(e) => e.stopPropagation()}>
             <div className="modal-content">
               <div className="modal-header">
@@ -263,9 +261,7 @@ const HomePage = () => {
                       onBlur={formik.handleBlur}
                       placeholder="Введите имя канала"
                       autoFocus
-                      className={`form-control ${
-                        formik.errors.name && (formik.touched.name || formik.submitCount > 0) ? 'is-invalid' : ''
-                      }`}
+                      className={`form-control ${formik.errors.name && (formik.touched.name || formik.submitCount > 0) ? 'is-invalid' : ''}`}
                     />
                     {formik.errors.name && (formik.touched.name || formik.submitCount > 0) && (
                       <div className="invalid-feedback d-block">{formik.errors.name}</div>
@@ -273,11 +269,14 @@ const HomePage = () => {
                   </div>
                   <div className="modal-footer">
                     <button type="button" onClick={closeModal} className="btn btn-secondary">Отменить</button>
-                    {channelToEdit && (
-                      <button type="button" onClick={handleDeleteChannel} className="btn btn-danger">
-                        Удалить
-                      </button>
-                    )}
+                    <button
+                      type="button"
+                      onClick={handleDeleteChannel}
+                      className="btn btn-danger"
+                      disabled={!channelToEdit}
+                    >
+                      Удалить
+                    </button>
                     <button type="submit" className="btn btn-primary" disabled={formik.isSubmitting}>
                       Отправить
                     </button>
