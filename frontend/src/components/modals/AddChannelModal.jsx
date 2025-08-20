@@ -2,7 +2,6 @@ import React, { useEffect, useRef } from 'react';
 import { useFormik } from 'formik';
 import * as Yup from 'yup';
 import { useDispatch, useSelector } from 'react-redux';
-import { useTranslation } from 'react-i18next';
 import { closeModal } from '../../store/modalsSlice.js';
 import { useSocket } from '../../hooks/index.js';
 import { setCurrentChannelId } from '../../store/channelsSlice.js';
@@ -10,7 +9,6 @@ import filterProfanity from '../../utils/filterProfanity.js';
 import { toast } from 'react-toastify';
 
 const AddChannelModal = () => {
-  const { t } = useTranslation();
   const dispatch = useDispatch();
   const socket = useSocket();
   const inputRef = useRef();
@@ -27,10 +25,10 @@ const AddChannelModal = () => {
     validationSchema: Yup.object({
       name: Yup.string()
         .trim()
-        .min(3, t('errors.channelNameLength'))
-        .max(20, t('errors.channelNameLength'))
-        .required(t('errors.required'))
-        .notOneOf(existingChannelNames, t('errors.uniq')),
+        .min(3, 'От 3 до 20 символов')
+        .max(20, 'От 3 до 20 символов')
+        .required('Обязательное поле')
+        .notOneOf(existingChannelNames, 'Такой канал уже существует'),
     }),
     onSubmit: ({ name }, { setSubmitting, setErrors, resetForm }) => {
       const cleanedName = filterProfanity(name.trim());
@@ -40,9 +38,9 @@ const AddChannelModal = () => {
           dispatch(setCurrentChannelId(response.data.id));
           dispatch(closeModal());
           resetForm();
-          toast.success(t('toast.channelCreated'));
+          toast.success('Канал создан');
         } else {
-          setErrors({ name: t('errors.network') });
+          setErrors({ name: 'Ошибка соединения' });
         }
         setSubmitting(false);
       });
@@ -58,7 +56,7 @@ const AddChannelModal = () => {
       <div className="modal-dialog modal-dialog-centered" role="document">
         <div className="modal-content">
           <div className="modal-header">
-            <h5 className="modal-title">{t('modals.add.header')}</h5>
+            <h5 className="modal-title">Добавить канал</h5>
             <button
               type="button"
               className="btn-close"
@@ -71,7 +69,7 @@ const AddChannelModal = () => {
             <form onSubmit={formik.handleSubmit} noValidate>
               <div className="mb-3">
                 <label htmlFor="channelName" className="form-label">
-                  {t('channelName')}
+                  Имя канала
                 </label>
                 <input
                   id="channelName"
@@ -96,18 +94,16 @@ const AddChannelModal = () => {
                   onClick={() => dispatch(closeModal())}
                   disabled={formik.isSubmitting}
                 >
-                  {t('modals.add.cancel')}
+                  Отменить
                 </button>
                 <button
                   type="submit"
                   className="btn btn-primary"
                   disabled={
-                    formik.isSubmitting ||
-                    !formik.isValid ||
-                    !formik.dirty
+                    formik.isSubmitting || !formik.isValid || !formik.dirty
                   }
                 >
-                  {t('modals.add.submit')}
+                  Отправить
                 </button>
               </div>
             </form>
