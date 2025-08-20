@@ -49,6 +49,10 @@ const AddChannelModal = () => {
     },
   });
 
+  const isInvalid =
+    !!formik.errors.name &&
+    (formik.touched.name || formik.submitCount > 0);
+
   return (
     <div className="modal show d-block" tabIndex="-1" role="dialog">
       <div className="modal-dialog modal-dialog-centered" role="document">
@@ -64,7 +68,7 @@ const AddChannelModal = () => {
             />
           </div>
           <div className="modal-body">
-            <form onSubmit={formik.handleSubmit}>
+            <form onSubmit={formik.handleSubmit} noValidate>
               <div className="mb-3">
                 <label htmlFor="channelName" className="form-label">
                   {t('modals.channelName')}
@@ -74,14 +78,14 @@ const AddChannelModal = () => {
                   ref={inputRef}
                   name="name"
                   type="text"
-                  className={`form-control ${formik.touched.name && formik.errors.name ? 'is-invalid' : ''}`}
+                  className={`form-control ${isInvalid ? 'is-invalid' : ''}`}
                   value={formik.values.name}
                   onChange={formik.handleChange}
                   onBlur={formik.handleBlur}
                   disabled={formik.isSubmitting}
                   autoComplete="off"
                 />
-                {formik.touched.name && formik.errors.name && (
+                {isInvalid && (
                   <div className="invalid-feedback">{formik.errors.name}</div>
                 )}
               </div>
@@ -97,7 +101,11 @@ const AddChannelModal = () => {
                 <button
                   type="submit"
                   className="btn btn-primary"
-                  disabled={formik.isSubmitting}
+                  disabled={
+                    formik.isSubmitting ||
+                    !formik.isValid ||
+                    !formik.dirty
+                  }
                 >
                   {t('submit')}
                 </button>
