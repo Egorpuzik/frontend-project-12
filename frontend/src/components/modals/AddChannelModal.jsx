@@ -20,16 +20,18 @@ const AddChannelModal = () => {
     inputRef.current?.focus();
   }, []);
 
+  const validationSchema = Yup.object().shape({
+    name: Yup.string()
+      .trim()
+      .min(3, 'От 3 до 20 символов')
+      .max(20, 'От 3 до 20 символов')
+      .required('Обязательное поле')
+      .notOneOf(existingChannelNames, 'Такой канал уже существует'),
+  });
+
   const formik = useFormik({
     initialValues: { name: '' },
-    validationSchema: Yup.object({
-      name: Yup.string()
-        .trim()
-        .min(3, 'От 3 до 20 символов')
-        .max(20, 'От 3 до 20 символов')
-        .required('Обязательное поле')
-        .notOneOf(existingChannelNames, 'Такой канал уже существует'),
-    }),
+    validationSchema,
     onSubmit: ({ name }, { setSubmitting, setErrors, resetForm }) => {
       const cleanedName = filterProfanity(name.trim());
 
@@ -46,9 +48,6 @@ const AddChannelModal = () => {
       });
     },
   });
-
-  const isInvalid =
-    !!formik.errors.name && (formik.touched.name || formik.submitCount > 0);
 
   return (
     <div className="modal show d-block" tabIndex="-1" role="dialog">
@@ -75,14 +74,14 @@ const AddChannelModal = () => {
                   ref={inputRef}
                   name="name"
                   type="text"
-                  className={`form-control ${isInvalid ? 'is-invalid' : ''}`}
+                  className={`form-control ${formik.errors.name && (formik.touched.name || formik.submitCount > 0) ? 'is-invalid' : ''}`}
                   value={formik.values.name}
                   onChange={formik.handleChange}
                   onBlur={formik.handleBlur}
                   disabled={formik.isSubmitting}
                   autoComplete="off"
                 />
-                {isInvalid && (
+                {formik.errors.name && (formik.touched.name || formik.submitCount > 0) && (
                   <div className="invalid-feedback">{formik.errors.name}</div>
                 )}
               </div>
