@@ -98,10 +98,11 @@ const HomePage = () => {
     }
   };
 
-  const handleOpenRename = (channel) => {
+  const handleOpenRename = async (channel) => {
     setChannelToRename(channel);
-    formik.setFieldValue('name', channel.name);
     setShowModal(true);
+    await new Promise((r) => setTimeout(r, 50)); 
+    formik.setFieldValue('name', channel.name);
   };
 
   const handleDeleteChannel = async () => {
@@ -129,7 +130,8 @@ const HomePage = () => {
           if (!value) return false;
           const existing = channels.map((c) => c.name.toLowerCase());
           if (channelToRename) {
-            existing.splice(existing.indexOf(channelToRename.name.toLowerCase()), 1);
+            const index = existing.indexOf(channelToRename.name.toLowerCase());
+            if (index !== -1) existing.splice(index, 1);
           }
           return !existing.includes(value.toLowerCase());
         }),
@@ -175,17 +177,12 @@ const HomePage = () => {
         </div>
         <ul className="list-group channel-list">
           {channels.map((channel) => (
-            <li
-              key={channel.id}
-              className="list-group-item p-0 border-0 d-flex justify-content-between align-items-center"
-            >
+            <li key={channel.id} className="list-group-item p-0 border-0 d-flex justify-content-between align-items-center">
               <button
                 type="button"
                 aria-label={filter.clean(channel.name)}
                 onClick={() => setActiveChannel(channel)}
-                className={`w-100 text-start btn btn-light ${
-                  activeChannel?.id === channel.id ? 'active' : ''
-                }`}
+                className={`w-100 text-start btn btn-light ${activeChannel?.id === channel.id ? 'active' : ''}`}
               >
                 <span>#</span> {filter.clean(channel.name)}
               </button>
@@ -212,13 +209,11 @@ const HomePage = () => {
           </div>
 
           <div className="message-list">
-            {messages
-              .filter((m) => m.channelId === activeChannel.id)
-              .map((msg) => (
-                <div key={msg.id} className="message">
-                  <strong>{msg.username}:</strong> {filter.clean(msg.body)}
-                </div>
-              ))}
+            {messages.filter((m) => m.channelId === activeChannel.id).map((msg) => (
+              <div key={msg.id} className="message">
+                <strong>{msg.username}:</strong> {filter.clean(msg.body)}
+              </div>
+            ))}
             <div ref={messagesEndRef} />
           </div>
 
@@ -233,9 +228,7 @@ const HomePage = () => {
               disabled={disconnected}
               className="form-control"
             />
-            <button type="submit" disabled={disconnected} className="btn btn-primary">
-              ➤
-            </button>
+            <button type="submit" disabled={disconnected} className="btn btn-primary">➤</button>
           </form>
         </div>
       ) : (
@@ -263,9 +256,7 @@ const HomePage = () => {
                       onBlur={formik.handleBlur}
                       placeholder="Введите имя канала"
                       autoFocus
-                      className={`form-control ${
-                        formik.errors.name && (formik.touched.name || formik.submitCount > 0) ? 'is-invalid' : ''
-                      }`}
+                      className={`form-control ${formik.errors.name && (formik.touched.name || formik.submitCount > 0) ? 'is-invalid' : ''}`}
                     />
                     {formik.errors.name && (formik.touched.name || formik.submitCount > 0) && (
                       <div className="invalid-feedback d-block">{formik.errors.name}</div>
@@ -274,9 +265,7 @@ const HomePage = () => {
                   <div className="modal-footer d-flex justify-content-between">
                     <button type="button" onClick={closeModal} className="btn btn-secondary">Отменить</button>
                     {channelToRename && (
-                      <button type="button" onClick={handleDeleteChannel} className="btn btn-danger">
-                        Удалить
-                      </button>
+                      <button type="button" onClick={handleDeleteChannel} className="btn btn-danger">Удалить</button>
                     )}
                     <button type="submit" className="btn btn-primary" disabled={formik.isSubmitting}>Отправить</button>
                   </div>
