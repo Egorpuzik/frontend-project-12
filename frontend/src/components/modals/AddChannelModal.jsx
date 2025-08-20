@@ -27,12 +27,11 @@ const AddChannelModal = () => {
     validationSchema: Yup.object({
       name: Yup.string()
         .trim()
-        .min(3, 'От 3 до 20 символов')
-        .max(20, 'От 3 до 20 символов')
-        .required('Обязательное поле')
-        .notOneOf(existingChannelNames, 'Такой канал уже существует'),
+        .min(3, t('errors.channelNameLength'))
+        .max(20, t('errors.channelNameLength'))
+        .required(t('errors.required'))
+        .notOneOf(existingChannelNames, t('errors.uniq')),
     }),
-    
     onSubmit: ({ name }, { setSubmitting, setErrors, resetForm }) => {
       const cleanedName = filterProfanity(name.trim());
 
@@ -59,7 +58,7 @@ const AddChannelModal = () => {
       <div className="modal-dialog modal-dialog-centered" role="document">
         <div className="modal-content">
           <div className="modal-header">
-            <h5 className="modal-title">{t('modals.add')}</h5>
+            <h5 className="modal-title">{t('modals.add.header')}</h5>
             <button
               type="button"
               className="btn-close"
@@ -72,7 +71,7 @@ const AddChannelModal = () => {
             <form onSubmit={formik.handleSubmit} noValidate>
               <div className="mb-3">
                 <label htmlFor="channelName" className="form-label">
-                  {t('modals.channelName')}
+                  {t('channelName')}
                 </label>
                 <input
                   id="channelName"
@@ -97,7 +96,7 @@ const AddChannelModal = () => {
                   onClick={() => dispatch(closeModal())}
                   disabled={formik.isSubmitting}
                 >
-                  {t('cancel')}
+                  {t('modals.add.cancel')}
                 </button>
                 <button
                   type="submit"
@@ -108,7 +107,7 @@ const AddChannelModal = () => {
                     !formik.dirty
                   }
                 >
-                  {t('submit')}
+                  {t('modals.add.submit')}
                 </button>
               </div>
             </form>
