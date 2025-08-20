@@ -104,6 +104,19 @@ const HomePage = () => {
     setShowModal(true);
   };
 
+  const handleDeleteChannel = async () => {
+    if (!channelToRename) return;
+    try {
+      await axios.delete(`/api/v1/channels/${channelToRename.id}`);
+      dispatch(removeChannel(channelToRename.id));
+      toast.success('Канал удалён');
+      closeModal();
+    } catch (err) {
+      console.error('Ошибка удаления канала:', err);
+      toast.error('Ошибка удаления');
+    }
+  };
+
   const formik = useFormik({
     initialValues: { name: '' },
     validationSchema: Yup.object({
@@ -234,7 +247,7 @@ const HomePage = () => {
           <div className="modal-dialog" onClick={(e) => e.stopPropagation()}>
             <div className="modal-content">
               <div className="modal-header">
-                <h5 className="modal-title">{channelToRename ? 'Переименовать канал' : 'Добавить канал'}</h5>
+                <h5 className="modal-title">{channelToRename ? 'Управление каналом' : 'Добавить канал'}</h5>
                 <button type="button" className="btn-close" aria-label="Закрыть" onClick={closeModal} />
               </div>
               <div className="modal-body">
@@ -258,8 +271,13 @@ const HomePage = () => {
                       <div className="invalid-feedback d-block">{formik.errors.name}</div>
                     )}
                   </div>
-                  <div className="modal-footer">
+                  <div className="modal-footer d-flex justify-content-between">
                     <button type="button" onClick={closeModal} className="btn btn-secondary">Отменить</button>
+                    {channelToRename && (
+                      <button type="button" onClick={handleDeleteChannel} className="btn btn-danger">
+                        Удалить
+                      </button>
+                    )}
                     <button type="submit" className="btn btn-primary" disabled={formik.isSubmitting}>Отправить</button>
                   </div>
                 </form>
