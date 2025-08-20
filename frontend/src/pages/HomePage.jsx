@@ -99,6 +99,12 @@ const HomePage = () => {
     }
   };
 
+  const handleOpenRename = (channel) => {
+    setChannelToRename(channel);
+    formik.setFieldValue('name', channel.name);
+    setShowModal(true);
+  };
+
   const formik = useFormik({
     initialValues: { name: '' },
     validationSchema: Yup.object({
@@ -113,6 +119,9 @@ const HomePage = () => {
           (value) => {
             if (!value) return false;
             const existing = channels.map((c) => c.name.toLowerCase());
+            if (channelToRename) {
+              existing.splice(existing.indexOf(channelToRename.name.toLowerCase()), 1);
+            }
             return !existing.includes(value.toLowerCase());
           },
         ),
@@ -139,12 +148,6 @@ const HomePage = () => {
     },
   });
 
-  const openRenameModal = (channel) => {
-    setChannelToRename(channel);
-    formik.setFieldValue('name', channel.name);
-    openModal();
-  };
-
   if (status === 'loading') return <div className="loading">Загрузка чата...</div>;
   if (error) return <div className="error">Ошибка загрузки: {error}</div>;
 
@@ -154,7 +157,7 @@ const HomePage = () => {
         <div className="sidebar-header">
           <span>Каналы</span>
           <button
-            onClick={openModal}
+            onClick={() => { setChannelToRename(null); openModal(); }}
             className="btn btn-primary btn-sm"
             aria-label="Добавить канал"
             type="button"
@@ -177,11 +180,11 @@ const HomePage = () => {
               </button>
               <button
                 type="button"
-                className="btn btn-sm btn-outline-secondary ms-1"
-                onClick={() => openRenameModal(channel)}
                 aria-label="Управление каналом"
+                className="btn btn-outline-secondary btn-sm ms-1"
+                onClick={() => handleOpenRename(channel)}
               >
-                ⚙
+                ⋮
               </button>
             </li>
           ))}
