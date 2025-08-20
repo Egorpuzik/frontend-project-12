@@ -7,6 +7,7 @@ import { useAuth } from '../contexts/AuthContext.jsx';
 import { toast } from 'react-toastify';
 import { useFormik } from 'formik';
 import * as Yup from 'yup';
+import filter from 'leo-profanity';
 import './HomePage.css';
 
 const HomePage = () => {
@@ -18,7 +19,6 @@ const HomePage = () => {
   const [messageText, setMessageText] = useState('');
   const [disconnected, setDisconnected] = useState(false);
   const [activeChannel, setActiveChannel] = useState(null);
-
   const [showModal, setShowModal] = useState(false);
 
   const messagesEndRef = useRef(null);
@@ -109,10 +109,10 @@ const HomePage = () => {
           'unique',
           'Такой канал уже существует',
           (value) => {
-            if (!value) return false; 
+            if (!value) return false;
             const existing = channels.map((c) => c.name.toLowerCase());
             return !existing.includes(value.toLowerCase());
-          }
+          },
         ),
     }),
 
@@ -156,13 +156,13 @@ const HomePage = () => {
             <li key={channel.id} className="list-group-item p-0 border-0">
               <button
                 type="button"
-                aria-label={channel.name}
+                aria-label={filter.clean(channel.name)}
                 onClick={() => setActiveChannel(channel)}
                 className={`w-100 text-start btn btn-light ${
                   activeChannel?.id === channel.id ? 'active' : ''
                 }`}
               >
-                <span>#</span> {channel.name}
+                <span>#</span> {filter.clean(channel.name)}
               </button>
             </li>
           ))}
@@ -173,7 +173,7 @@ const HomePage = () => {
       {activeChannel ? (
         <div className="chat-main">
           <div className="chat-header">
-            <span>#{activeChannel.name}</span>
+            <span>#{filter.clean(activeChannel.name)}</span>
             <span className="message-count">
               {messages.filter((m) => m.channelId === activeChannel.id).length} сообщений
             </span>
@@ -184,7 +184,7 @@ const HomePage = () => {
               .filter((m) => m.channelId === activeChannel.id)
               .map((msg) => (
                 <div key={msg.id} className="message">
-                  <strong>{msg.username}:</strong> {msg.body}
+                  <strong>{msg.username}:</strong> {filter.clean(msg.body)}
                 </div>
               ))}
             <div ref={messagesEndRef} />
