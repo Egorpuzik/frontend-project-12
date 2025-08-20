@@ -20,6 +20,7 @@ const HomePage = () => {
   const [disconnected, setDisconnected] = useState(false);
   const [activeChannel, setActiveChannel] = useState(null);
   const [showModal, setShowModal] = useState(false);
+  const [channelToRename, setChannelToRename] = useState(null);
 
   const messagesEndRef = useRef(null);
   const messageInputRef = useRef(null);
@@ -28,6 +29,7 @@ const HomePage = () => {
   const closeModal = () => {
     setShowModal(false);
     formik.resetForm();
+    setChannelToRename(null);
   };
 
   useEffect(() => {
@@ -115,17 +117,21 @@ const HomePage = () => {
           },
         ),
     }),
-
     validateOnChange: false,
     validateOnBlur: true,
     onSubmit: async ({ name }, { setSubmitting, setErrors, resetForm }) => {
       try {
-        await axios.post('/api/v1/channels', { name: name.trim() });
+        if (channelToRename) {
+          await axios.patch(`/api/v1/channels/${channelToRename.id}`, { name: name.trim() });
+          toast.success('Канал переименован');
+        } else {
+          await axios.post('/api/v1/channels', { name: name.trim() });
+          toast.success('Канал создан');
+        }
         closeModal();
         resetForm();
-        toast.success('Канал создан');
       } catch (err) {
-        console.error('Ошибка добавления канала:', err);
+        console.error('Ошибка добавления/переименования канала:', err);
         setErrors({ name: 'Ошибка соединения' });
       } finally {
         setSubmitting(false);
@@ -133,12 +139,17 @@ const HomePage = () => {
     },
   });
 
+  const openRenameModal = (channel) => {
+    setChannelToRename(channel);
+    formik.setFieldValue('name', channel.name);
+    openModal();
+  };
+
   if (status === 'loading') return <div className="loading">Загрузка чата...</div>;
   if (error) return <div className="error">Ошибка загрузки: {error}</div>;
 
   return (
     <div className="chat-container">
-      {/* Сайдбар с каналами */}
       <div className="sidebar">
         <div className="sidebar-header">
           <span>Каналы</span>
@@ -153,7 +164,7 @@ const HomePage = () => {
         </div>
         <ul className="list-group channel-list">
           {channels.map((channel) => (
-            <li key={channel.id} className="list-group-item p-0 border-0">
+            <li key={channel.id} className="list-group-item p-0 border-0 d-flex justify-content-between align-items-center">
               <button
                 type="button"
                 aria-label={filter.clean(channel.name)}
@@ -164,12 +175,19 @@ const HomePage = () => {
               >
                 <span>#</span> {filter.clean(channel.name)}
               </button>
+              <button
+                type="button"
+                className="btn btn-sm btn-outline-secondary ms-1"
+                onClick={() => openRenameModal(channel)}
+                aria-label="Управление каналом"
+              >
+                ⚙
+              </button>
             </li>
           ))}
         </ul>
       </div>
 
-      {/* Основное окно чата */}
       {activeChannel ? (
         <div className="chat-main">
           <div className="chat-header">
@@ -214,13 +232,12 @@ const HomePage = () => {
         <div className="chat-placeholder">Выберите канал</div>
       )}
 
-      {/* Модалка добавления канала */}
       {showModal && (
         <div className="modal show d-block" tabIndex="-1" onClick={closeModal}>
           <div className="modal-dialog" onClick={(e) => e.stopPropagation()}>
             <div className="modal-content">
               <div className="modal-header">
-                <h5 className="modal-title">Добавить канал</h5>
+                <h5 className="modal-title">{channelToRename ? 'Переименовать канал' : 'Добавить канал'}</h5>
                 <button
                   type="button"
                   className="btn-close"
@@ -231,11 +248,11 @@ const HomePage = () => {
               <div className="modal-body">
                 <form onSubmit={formik.handleSubmit} noValidate>
                   <div className="mb-3">
-                    <label htmlFor="newChannel" className="form-label">
+                    <label htmlFor="channelName" className="form-label">
                       Имя канала
                     </label>
                     <input
-                      id="newChannel"
+                      id="channelName"
                       name="name"
                       type="text"
                       value={formik.values.name}
