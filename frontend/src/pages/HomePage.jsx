@@ -13,8 +13,7 @@ import './HomePage.css';
 const HomePage = () => {
   const dispatch = useDispatch();
   const { user } = useAuth();
-  const { channels = [], messages = [], status = 'idle', error } =
-    useSelector((state) => state.chat || {});
+  const { channels = [], messages = [], status = 'idle', error } = useSelector((state) => state.chat || {});
 
   const [messageText, setMessageText] = useState('');
   const [disconnected, setDisconnected] = useState(false);
@@ -113,18 +112,14 @@ const HomePage = () => {
         .min(3, 'От 3 до 20 символов')
         .max(20, 'От 3 до 20 символов')
         .required('Обязательное поле')
-        .test(
-          'unique',
-          'Такой канал уже существует',
-          (value) => {
-            if (!value) return false;
-            const existing = channels.map((c) => c.name.toLowerCase());
-            if (channelToRename) {
-              existing.splice(existing.indexOf(channelToRename.name.toLowerCase()), 1);
-            }
-            return !existing.includes(value.toLowerCase());
-          },
-        ),
+        .test('unique', 'Такой канал уже существует', (value) => {
+          if (!value) return false;
+          const existing = channels.map((c) => c.name.toLowerCase());
+          if (channelToRename) {
+            existing.splice(existing.indexOf(channelToRename.name.toLowerCase()), 1);
+          }
+          return !existing.includes(value.toLowerCase());
+        }),
     }),
     validateOnChange: false,
     validateOnBlur: true,
@@ -166,33 +161,32 @@ const HomePage = () => {
           </button>
         </div>
         <ul className="list-group channel-list">
-        {channels.map((channel) => (
-    <li
-      key={channel.id}
-      className="list-group-item p-0 border-0 d-flex justify-content-between align-items-center"
-    >
-      <button
-        type="button"
-        aria-label={filter.clean(channel.name)}
-        onClick={() => setActiveChannel(channel)}
-        className={`w-100 text-start btn btn-light ${
-          activeChannel?.id === channel.id ? 'active' : ''
-        }`}
-      >
-        <span>#</span> {filter.clean(channel.name)}
-      </button>
-      <button
-        type="button"
-        aria-label="Управление каналом"
-        className="btn btn-outline-secondary btn-sm ms-1"
-        onClick={() => handleOpenRename(channel)}
-      >
-        Управление каналом
-      </button>
-    </li>
-  ))}
-</ul>
-
+          {channels.map((channel) => (
+            <li
+              key={channel.id}
+              className="list-group-item p-0 border-0 d-flex justify-content-between align-items-center"
+            >
+              <button
+                type="button"
+                aria-label={filter.clean(channel.name)}
+                onClick={() => setActiveChannel(channel)}
+                className={`w-100 text-start btn btn-light ${
+                  activeChannel?.id === channel.id ? 'active' : ''
+                }`}
+              >
+                <span>#</span> {filter.clean(channel.name)}
+              </button>
+              <button
+                type="button"
+                aria-label="Управление каналом"
+                className="btn btn-outline-secondary btn-sm ms-1"
+                onClick={() => handleOpenRename(channel)}
+              >
+                Управление каналом
+              </button>
+            </li>
+          ))}
+        </ul>
       </div>
 
       {activeChannel ? (
@@ -226,11 +220,7 @@ const HomePage = () => {
               disabled={disconnected}
               className="form-control"
             />
-            <button
-              type="submit"
-              disabled={disconnected}
-              className="btn btn-primary"
-            >
+            <button type="submit" disabled={disconnected} className="btn btn-primary">
               ➤
             </button>
           </form>
@@ -245,19 +235,12 @@ const HomePage = () => {
             <div className="modal-content">
               <div className="modal-header">
                 <h5 className="modal-title">{channelToRename ? 'Переименовать канал' : 'Добавить канал'}</h5>
-                <button
-                  type="button"
-                  className="btn-close"
-                  aria-label="Закрыть"
-                  onClick={closeModal}
-                />
+                <button type="button" className="btn-close" aria-label="Закрыть" onClick={closeModal} />
               </div>
               <div className="modal-body">
                 <form onSubmit={formik.handleSubmit} noValidate>
                   <div className="mb-3">
-                    <label htmlFor="channelName" className="form-label">
-                      Имя канала
-                    </label>
+                    <label htmlFor="channelName" className="form-label">Имя канала</label>
                     <input
                       id="channelName"
                       name="name"
@@ -268,28 +251,16 @@ const HomePage = () => {
                       placeholder="Введите имя канала"
                       autoFocus
                       className={`form-control ${
-                        formik.errors.name && (formik.touched.name || formik.submitCount > 0)
-                          ? 'is-invalid'
-                          : ''
+                        formik.errors.name && (formik.touched.name || formik.submitCount > 0) ? 'is-invalid' : ''
                       }`}
                     />
                     {formik.errors.name && (formik.touched.name || formik.submitCount > 0) && (
-                      <div className="invalid-feedback d-block">
-                        {formik.errors.name}
-                      </div>
+                      <div className="invalid-feedback d-block">{formik.errors.name}</div>
                     )}
                   </div>
                   <div className="modal-footer">
-                    <button type="button" onClick={closeModal} className="btn btn-secondary">
-                      Отменить
-                    </button>
-                    <button
-                      type="submit"
-                      className="btn btn-primary"
-                      disabled={formik.isSubmitting}
-                    >
-                      Отправить
-                    </button>
+                    <button type="button" onClick={closeModal} className="btn btn-secondary">Отменить</button>
+                    <button type="submit" className="btn btn-primary" disabled={formik.isSubmitting}>Отправить</button>
                   </div>
                 </form>
               </div>
