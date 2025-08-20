@@ -7,14 +7,11 @@ import { useAuth } from '../contexts/AuthContext.jsx';
 import { toast } from 'react-toastify';
 import { useFormik } from 'formik';
 import * as Yup from 'yup';
-import { useTranslation } from 'react-i18next';
 import './HomePage.css';
 
 const HomePage = () => {
   const dispatch = useDispatch();
   const { user } = useAuth();
-  const { t } = useTranslation();
-
   const { channels = [], messages = [], status = 'idle', error } =
     useSelector((state) => state.chat || {});
 
@@ -96,7 +93,7 @@ const HomePage = () => {
       messageInputRef.current?.focus();
     } catch (err) {
       console.error('Ошибка отправки сообщения:', err);
-      toast.error(t('errors.network'));
+      toast.error('Ошибка соединения');
     }
   };
 
@@ -104,43 +101,51 @@ const HomePage = () => {
     initialValues: { name: '' },
     validationSchema: Yup.object({
       name: Yup.string()
-        .trim()
-        .min(3, t('errors.range'))
-        .max(20, t('errors.range'))
-        .required(t('errors.required'))
-        .notOneOf(
-          channels.map((c) => c.name.toLowerCase()),
-          t('errors.uniq'),
+        .transform((v) => (typeof v === 'string' ? v.trim() : ''))
+        .min(3, 'От 3 до 20 символов')
+        .max(20, 'От 3 до 20 символов')
+        .required('Обязательное поле')
+        .test(
+          'unique',
+          'Такой канал уже существует',
+          (value) => {
+            if (!value) return false; 
+            const existing = channels.map((c) => c.name.toLowerCase());
+            return !existing.includes(value.toLowerCase());
+          }
         ),
     }),
+
+    validateOnChange: false,
+    validateOnBlur: true,
     onSubmit: async ({ name }, { setSubmitting, setErrors, resetForm }) => {
       try {
         await axios.post('/api/v1/channels', { name: name.trim() });
         closeModal();
         resetForm();
-        toast.success(t('toast.channelCreated'));
+        toast.success('Канал создан');
       } catch (err) {
         console.error('Ошибка добавления канала:', err);
-        setErrors({ name: t('errors.network') });
+        setErrors({ name: 'Ошибка соединения' });
       } finally {
         setSubmitting(false);
       }
     },
   });
 
-  if (status === 'loading') return <div className="loading">{t('loading')}</div>;
-  if (error) return <div className="error">{t('errors.loadError', { error })}</div>;
+  if (status === 'loading') return <div className="loading">Загрузка чата...</div>;
+  if (error) return <div className="error">Ошибка загрузки: {error}</div>;
 
   return (
     <div className="chat-container">
       {/* Сайдбар с каналами */}
       <div className="sidebar">
         <div className="sidebar-header">
-          <span>{t('channels')}</span>
+          <span>Каналы</span>
           <button
             onClick={openModal}
             className="btn btn-primary btn-sm"
-            aria-label={t('addChannel')}
+            aria-label="Добавить канал"
             type="button"
           >
             +
@@ -170,8 +175,7 @@ const HomePage = () => {
           <div className="chat-header">
             <span>#{activeChannel.name}</span>
             <span className="message-count">
-              {messages.filter((m) => m.channelId === activeChannel.id).length}{' '}
-              {t('messagesCount')}
+              {messages.filter((m) => m.channelId === activeChannel.id).length} сообщений
             </span>
           </div>
 
@@ -190,16 +194,16 @@ const HomePage = () => {
             <input
               ref={messageInputRef}
               type="text"
-              aria-label={t('newMessage')}
+              aria-label="Новое сообщение"
               value={messageText}
               onChange={(e) => setMessageText(e.target.value)}
-              placeholder={t('enterMessage')}
+              placeholder="Введите сообщение..."
               disabled={disconnected}
               className="form-control"
             />
             <button
               type="submit"
-              disabled={disconnected || !activeChannel}
+              disabled={disconnected}
               className="btn btn-primary"
             >
               ➤
@@ -207,7 +211,7 @@ const HomePage = () => {
           </form>
         </div>
       ) : (
-        <div className="chat-placeholder">{t('selectChannel')}</div>
+        <div className="chat-placeholder">Выберите канал</div>
       )}
 
       {/* Модалка добавления канала */}
@@ -216,11 +220,11 @@ const HomePage = () => {
           <div className="modal-dialog" onClick={(e) => e.stopPropagation()}>
             <div className="modal-content">
               <div className="modal-header">
-                <h5 className="modal-title">{t('modals.addChannel.header')}</h5>
+                <h5 className="modal-title">Добавить канал</h5>
                 <button
                   type="button"
                   className="btn-close"
-                  aria-label={t('close')}
+                  aria-label="Закрыть"
                   onClick={closeModal}
                 />
               </div>
@@ -228,7 +232,7 @@ const HomePage = () => {
                 <form onSubmit={formik.handleSubmit} noValidate>
                   <div className="mb-3">
                     <label htmlFor="newChannel" className="form-label">
-                      {t('channelName')}
+                      Имя канала
                     </label>
                     <input
                       id="newChannel"
@@ -237,7 +241,7 @@ const HomePage = () => {
                       value={formik.values.name}
                       onChange={formik.handleChange}
                       onBlur={formik.handleBlur}
-                      placeholder={t('enterChannelName')}
+                      placeholder="Введите имя канала"
                       autoFocus
                       className={`form-control ${
                         formik.errors.name && (formik.touched.name || formik.submitCount > 0)
@@ -253,14 +257,14 @@ const HomePage = () => {
                   </div>
                   <div className="modal-footer">
                     <button type="button" onClick={closeModal} className="btn btn-secondary">
-                      {t('cancel')}
+                      Отменить
                     </button>
                     <button
                       type="submit"
                       className="btn btn-primary"
-                      disabled={formik.isSubmitting || !formik.isValid || !formik.dirty}
+                      disabled={formik.isSubmitting}
                     >
-                      {t('submit')}
+                      Отправить
                     </button>
                   </div>
                 </form>
