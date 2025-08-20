@@ -20,15 +20,21 @@ const HomePage = () => {
   const [activeChannel, setActiveChannel] = useState(null);
   const [showModal, setShowModal] = useState(false);
   const [channelToEdit, setChannelToEdit] = useState(null);
+  const [modalReady, setModalReady] = useState(false); 
 
   const messagesEndRef = useRef(null);
   const messageInputRef = useRef(null);
 
-  const openModal = () => setShowModal(true);
+  const openModal = () => {
+    setShowModal(true);
+    setModalReady(false);
+    setTimeout(() => setModalReady(true), 0); 
+  };
   const closeModal = () => {
     setShowModal(false);
     formik.resetForm();
     setChannelToEdit(null);
+    setModalReady(false);
   };
 
   useEffect(() => {
@@ -240,7 +246,7 @@ const HomePage = () => {
         <div className="chat-placeholder">Выберите канал</div>
       )}
 
-      {showModal && (
+      {showModal && modalReady && (
         <div key={channelToEdit?.id || 'new'} className="modal show d-block" tabIndex="-1" onClick={closeModal}>
           <div className="modal-dialog" onClick={(e) => e.stopPropagation()}>
             <div className="modal-content">
