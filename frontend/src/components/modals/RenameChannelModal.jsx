@@ -22,7 +22,9 @@ const RenameChannelModal = () => {
     : [];
 
   useEffect(() => {
-    inputRef.current?.focus();
+    if (isOpen) {
+      inputRef.current?.focus();
+    }
   }, [isOpen]);
 
   const formik = useFormik({
@@ -32,12 +34,12 @@ const RenameChannelModal = () => {
     validationSchema: Yup.object({
       name: Yup.string()
         .trim()
-        .min(3, t('errors.min', { min: 3 }))
-        .max(20, t('errors.max', { max: 20 }))
+        .min(3, t('errors.min', { min: 3, max: 20 }))
+        .max(20, t('errors.min', { min: 3, max: 20 }))
         .required(t('errors.required'))
         .notOneOf(existingNames, t('errors.uniq')),
     }),
-    onSubmit: ({ name }, { setSubmitting, resetForm }) => {
+    onSubmit: ({ name }, { setSubmitting, resetForm, setErrors }) => {
       const cleanedName = filterProfanity(name.trim());
 
       socket.emit('renameChannel', { id: channel.id, name: cleanedName }, (response) => {
@@ -46,7 +48,7 @@ const RenameChannelModal = () => {
           dispatch(closeModal());
           resetForm();
         } else {
-          toast.error(t('toast.networkError'));
+          setErrors({ name: t('toast.networkError') });
         }
         setSubmitting(false);
       });
@@ -57,10 +59,6 @@ const RenameChannelModal = () => {
   if (!isOpen || !channel) {
     return null;
   }
-
-  const isInvalid =
-    !!formik.errors.name &&
-    (formik.touched.name || formik.submitCount > 0);
 
   return (
     <div className="modal show d-block" tabIndex="-1" role="dialog">
@@ -87,13 +85,15 @@ const RenameChannelModal = () => {
                   ref={inputRef}
                   name="name"
                   type="text"
-                  className={`form-control ${isInvalid ? 'is-invalid' : ''}`}
+                  className={`form-control ${
+                    formik.touched.name && formik.errors.name ? 'is-invalid' : ''
+                  }`}
                   value={formik.values.name}
                   onChange={formik.handleChange}
                   onBlur={formik.handleBlur}
                   disabled={formik.isSubmitting}
                 />
-                {isInvalid && (
+                {formik.touched.name && formik.errors.name && (
                   <div className="invalid-feedback">{formik.errors.name}</div>
                 )}
               </div>

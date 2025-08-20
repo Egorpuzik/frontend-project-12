@@ -5,6 +5,8 @@ import { fetchChatData, newMessage, addChannel, removeChannel, renameChannel } f
 import { getSocket } from '../utils/socket.js';
 import { useAuth } from '../contexts/AuthContext.jsx';
 import { toast } from 'react-toastify';
+import { useFormik } from 'formik';
+import * as Yup from 'yup';
 import './HomePage.css';
 
 const HomePage = () => {
@@ -18,8 +20,6 @@ const HomePage = () => {
   const [activeChannel, setActiveChannel] = useState(null);
 
   const [showModal, setShowModal] = useState(false);
-  const [newChannelName, setNewChannelName] = useState('');
-  const [channelError, setChannelError] = useState('');
 
   const messagesEndRef = useRef(null);
   const messageInputRef = useRef(null);
@@ -27,8 +27,7 @@ const HomePage = () => {
   const openModal = () => setShowModal(true);
   const closeModal = () => {
     setShowModal(false);
-    setNewChannelName('');
-    setChannelError('');
+    formik.resetForm();
   };
 
   useEffect(() => {
@@ -98,24 +97,30 @@ const HomePage = () => {
     }
   };
 
-  const handleAddChannel = async (e) => {
-    e.preventDefault();
-
-    const trimmed = newChannelName.trim();
-    if (trimmed.length < 3 || trimmed.length > 20) {
-      setChannelError('Имя канала должно быть от 3 до 20 символов');
-      return;
-    }
-
-    try {
-      await axios.post('/api/v1/channels', { name: trimmed });
-      closeModal();
-      toast.success('Канал создан');
-    } catch (err) {
-      console.error('Ошибка добавления канала:', err);
-      toast.error('Ошибка соединения');
-    }
-  };
+  const formik = useFormik({
+    initialValues: { name: '' },
+    validationSchema: Yup.object({
+      name: Yup.string()
+        .trim()
+        .min(3, 'От 3 до 20 символов')
+        .max(20, 'От 3 до 20 символов')
+        .required('Обязательное поле')
+        .notOneOf(channels.map((c) => c.name.toLowerCase()), 'Такой канал уже существует'),
+    }),
+    onSubmit: async ({ name }, { setSubmitting, setErrors, resetForm }) => {
+      try {
+        await axios.post('/api/v1/channels', { name: name.trim() });
+        closeModal();
+        resetForm();
+        toast.success('Канал создан');
+      } catch (err) {
+        console.error('Ошибка добавления канала:', err);
+        setErrors({ name: 'Ошибка соединения' });
+      } finally {
+        setSubmitting(false);
+      }
+    },
+  });
 
   if (status === 'loading') return <div className="loading">Загрузка чата...</div>;
   if (error) return <div className="error">Ошибка загрузки: {error}</div>;
@@ -213,27 +218,30 @@ const HomePage = () => {
                 />
               </div>
               <div className="modal-body">
-                <form onSubmit={handleAddChannel}>
+                <form onSubmit={formik.handleSubmit} noValidate>
                   <div className="mb-3">
                     <label htmlFor="newChannel" className="form-label">
                       Имя канала
                     </label>
                     <input
                       id="newChannel"
+                      name="name"
                       type="text"
-                      value={newChannelName}
-                      onChange={(e) => {
-                        setNewChannelName(e.target.value);
-                        setChannelError('');
-                      }}
+                      value={formik.values.name}
+                      onChange={formik.handleChange}
+                      onBlur={formik.handleBlur}
                       placeholder="Введите имя канала"
                       autoFocus
                       className={`form-control ${
-                        channelError ? 'is-invalid' : ''
+                        formik.errors.name && (formik.touched.name || formik.submitCount > 0)
+                          ? 'is-invalid'
+                          : ''
                       }`}
                     />
-                    {channelError && (
-                      <div className="invalid-feedback d-block">{channelError}</div>
+                    {formik.errors.name && (formik.touched.name || formik.submitCount > 0) && (
+                      <div className="invalid-feedback d-block">
+                        {formik.errors.name}
+                      </div>
                     )}
                   </div>
                   <div className="modal-footer">
@@ -243,7 +251,7 @@ const HomePage = () => {
                     <button
                       type="submit"
                       className="btn btn-primary"
-                      disabled={newChannelName.trim().length < 3 || newChannelName.trim().length > 20}
+                      disabled={formik.isSubmitting || !formik.isValid || !formik.dirty}
                     >
                       Отправить
                     </button>
