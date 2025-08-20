@@ -16,8 +16,10 @@ const HomePage = () => {
   const [messageText, setMessageText] = useState('');
   const [disconnected, setDisconnected] = useState(false);
   const [activeChannel, setActiveChannel] = useState(null);
+
   const [showModal, setShowModal] = useState(false);
   const [newChannelName, setNewChannelName] = useState('');
+  const [channelError, setChannelError] = useState('');
 
   const messagesEndRef = useRef(null);
   const messageInputRef = useRef(null);
@@ -26,6 +28,7 @@ const HomePage = () => {
   const closeModal = () => {
     setShowModal(false);
     setNewChannelName('');
+    setChannelError('');
   };
 
   useEffect(() => {
@@ -97,10 +100,15 @@ const HomePage = () => {
 
   const handleAddChannel = async (e) => {
     e.preventDefault();
-    if (!newChannelName.trim()) return;
+
+    const trimmed = newChannelName.trim();
+    if (trimmed.length < 3 || trimmed.length > 20) {
+      setChannelError('Имя канала должно быть от 3 до 20 символов');
+      return;
+    }
 
     try {
-      await axios.post('/api/v1/channels', { name: newChannelName.trim() });
+      await axios.post('/api/v1/channels', { name: trimmed });
       closeModal();
       toast.success('Канал создан');
     } catch (err) {
@@ -214,21 +222,29 @@ const HomePage = () => {
                       id="newChannel"
                       type="text"
                       value={newChannelName}
-                      onChange={(e) => setNewChannelName(e.target.value)}
+                      onChange={(e) => {
+                        setNewChannelName(e.target.value);
+                        setChannelError('');
+                      }}
                       placeholder="Введите имя канала"
                       autoFocus
-                      className="form-control"
+                      className={`form-control ${
+                        channelError ? 'is-invalid' : ''
+                      }`}
                     />
-                    {/* Подсказка для теста */}
-                    <div className="invalid-feedback d-block" role="alert">
-                      От 3 до 20 символов
-                    </div>
+                    {channelError && (
+                      <div className="invalid-feedback d-block">{channelError}</div>
+                    )}
                   </div>
                   <div className="modal-footer">
                     <button type="button" onClick={closeModal} className="btn btn-secondary">
                       Отменить
                     </button>
-                    <button type="submit" className="btn btn-primary">
+                    <button
+                      type="submit"
+                      className="btn btn-primary"
+                      disabled={newChannelName.trim().length < 3 || newChannelName.trim().length > 20}
+                    >
                       Отправить
                     </button>
                   </div>
