@@ -1,6 +1,7 @@
 import { createSlice } from '@reduxjs/toolkit';
+import filter from 'leo-profanity';
 
-const DEFAULT_CHANNEL_ID = 1; 
+const DEFAULT_CHANNEL_ID = 1;
 
 const channelsSlice = createSlice({
   name: 'channels',
@@ -10,7 +11,8 @@ const channelsSlice = createSlice({
   },
   reducers: {
     addChannel: (state, action) => {
-      state.channels.push(action.payload);
+      const cleanName = filter.clean(action.payload.name);
+      state.channels.push({ ...action.payload, name: cleanName });
     },
     removeChannel: (state, action) => {
       const { id } = action.payload;
@@ -24,14 +26,17 @@ const channelsSlice = createSlice({
       const { id, name } = action.payload;
       const channel = state.channels.find((c) => c.id === id);
       if (channel) {
-        channel.name = name;
+        channel.name = filter.clean(name);
       }
     },
     setCurrentChannelId: (state, action) => {
       state.currentChannelId = action.payload;
     },
     setChannels: (state, action) => {
-      state.channels = action.payload.channels;
+      state.channels = action.payload.channels.map((ch) => ({
+        ...ch,
+        name: filter.clean(ch.name),
+      }));
       state.currentChannelId = action.payload.currentChannelId;
     },
   },
