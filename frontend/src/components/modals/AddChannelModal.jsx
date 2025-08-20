@@ -48,8 +48,7 @@ const AddChannelModal = () => {
   });
 
   const isInvalid =
-    !!formik.errors.name &&
-    (formik.touched.name || formik.submitCount > 0);
+    !!formik.errors.name && (formik.touched.name || formik.submitCount > 0);
 
   return (
     <div className="modal show d-block" tabIndex="-1" role="dialog">
