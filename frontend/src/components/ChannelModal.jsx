@@ -76,7 +76,10 @@ const ChannelModal = ({ type, channel, channels, onClose, onSubmit, onDelete }) 
                 {isEdit && channel && (
                   <button
                     type="button"
-                    onClick={() => onDelete(channel)}
+                    onClick={() => {
+                      toast.dismiss();
+                      onDelete(channel);
+                    }}
                     className="btn btn-danger"
                   >
                     Удалить

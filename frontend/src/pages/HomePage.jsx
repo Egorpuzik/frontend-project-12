@@ -97,10 +97,12 @@ const HomePage = () => {
       if (channel) {
         await axios.patch(`/api/v1/channels/${channel.id}`, { name });
         dispatch(renameChannel({ ...channel, name }));
+        toast.dismiss();
         toast.success('Канал переименован');
       } else {
         const { data } = await axios.post('/api/v1/channels', { name });
         dispatch(addChannel(data));
+        toast.dismiss();
         toast.success('Канал создан');
       }
       closeModal();
@@ -115,6 +117,7 @@ const HomePage = () => {
     try {
       await axios.delete(`/api/v1/channels/${channel.id}`);
       dispatch(removeChannel(channel.id));
+      toast.dismiss();
       toast.success('Канал удалён');
       setTimeout(() => closeModal(), 200);
       if (activeChannel?.id === channel.id) {
