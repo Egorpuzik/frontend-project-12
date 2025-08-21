@@ -43,7 +43,7 @@ const RemoveChannelModal = () => {
             <button
               type="button"
               className="btn-close"
-              aria-label="Close"
+              aria-label={t('modals.remove.cancel')}
               onClick={handleClose}
             />
           </div>
@@ -61,6 +61,7 @@ const RemoveChannelModal = () => {
             <button
               type="button"
               className="btn btn-danger"
+              aria-label="Удалить"
               data-testid="remove-channel"
               onClick={handleRemove}
             >
