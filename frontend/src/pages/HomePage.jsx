@@ -10,8 +10,6 @@ import * as Yup from 'yup';
 import filter from 'leo-profanity';
 import './HomePage.css';
 
-const NON_MANAGED_CHANNELS = ['general', 'random'];
-
 const HomePage = () => {
   const dispatch = useDispatch();
   const { user } = useAuth();
@@ -20,17 +18,13 @@ const HomePage = () => {
   const [messageText, setMessageText] = useState('');
   const [disconnected, setDisconnected] = useState(false);
   const [activeChannel, setActiveChannel] = useState(null);
-
-  const [showModal, setShowModal] = useState(false);
-  const [modalReady, setModalReady] = useState(false);
-
-  const [modalMode, setModalMode] = useState('add');
-  const [channelToEdit, setChannelToEdit] = useState(null);
-
-  const [openActionFor, setOpenActionFor] = useState(null);
+  const [modalInfo, setModalInfo] = useState({ show: false, channel: null });
 
   const messagesEndRef = useRef(null);
   const messageInputRef = useRef(null);
+
+  const openModal = (channel = null) => setModalInfo({ show: true, channel });
+  const closeModal = () => setModalInfo({ show: false, channel: null });
 
   useEffect(() => {
     dispatch(fetchChatData());
@@ -38,15 +32,12 @@ const HomePage = () => {
 
   useEffect(() => {
     const socket = getSocket();
-    if (!socket) {
-      setDisconnected(true);
-      return undefined;
-    }
+    if (!socket) return;
 
     const handleNewMessage = (message) => dispatch(newMessage(message));
     const handleNewChannel = (channel) => dispatch(addChannel(channel));
-    const handleRemoveChannel = ({ id }) => dispatch(removeChannelAction(id));
-    const handleRenameChannel = (channel) => dispatch(renameChannelAction(channel));
+    const handleRemoveChannel = ({ id }) => dispatch(removeChannel(id));
+    const handleRenameChannel = (channel) => dispatch(renameChannel(channel));
     const onDisconnect = () => setDisconnected(true);
     const onConnect = () => setDisconnected(false);
 
@@ -73,13 +64,6 @@ const HomePage = () => {
     if (channels.length > 0 && !activeChannel) {
       const general = channels.find((c) => c.name === 'general') || channels[0];
       setActiveChannel(general);
-    } else if (activeChannel) {
-      const found = channels.find((c) => c.id === activeChannel.id);
-      if (!found) {
-        setActiveChannel(channels[0] || null);
-      } else if (found.name !== activeChannel.name) {
-        setActiveChannel(found);
-      }
     }
   }, [channels, activeChannel]);
 
@@ -90,22 +74,6 @@ const HomePage = () => {
   useEffect(() => {
     messageInputRef.current?.focus();
   }, [activeChannel]);
-
-  const openModal = (mode = 'add', channel = null) => {
-    setModalMode(mode);
-    setChannelToEdit(channel);
-    setShowModal(true);
-    setModalReady(false);
-    setTimeout(() => setModalReady(true), 0);
-  };
-
-  const closeModal = () => {
-    setShowModal(false);
-    setModalReady(false);
-    setChannelToEdit(null);
-    setModalMode('add');
-    formik.resetForm();
-  };
 
   const handleSendMessage = async (e) => {
     e.preventDefault();
@@ -120,63 +88,19 @@ const HomePage = () => {
       setMessageText('');
       messageInputRef.current?.focus();
     } catch (err) {
-      console.error('Ошибка отправки сообщения:', err);
       toast.error('Ошибка соединения');
     }
-  };
-
-  const handleOpenActionMenu = (channelId) => {
-    setOpenActionFor((prev) => (prev === channelId ? null : channelId));
-  };
-
-  const handleRequestRename = (channel) => {
-    setOpenActionFor(null);
-    openModal('rename', channel);
-    formik.setFieldValue('name', channel.name);
-  };
-
-  const handleRequestDelete = (channel) => {
-    setOpenActionFor(null);
-    openModal('remove', channel);
   };
 
   const handleDeleteChannel = async () => {
-    if (!channelToEdit) return;
+    if (!modalInfo.channel) return;
     try {
-      await axios.delete(`/api/v1/channels/${channelToEdit.id}`);
-      dispatch(removeChannelAction(channelToEdit.id));
+      await axios.delete(`/api/v1/channels/${modalInfo.channel.id}`);
+      dispatch(removeChannel(modalInfo.channel.id));
       toast.success('Канал удалён');
-      if (activeChannel?.id === channelToEdit.id) {
-        setActiveChannel(channels.find((c) => c.id !== channelToEdit.id) || null);
-      }
       closeModal();
-    } catch (err) {
-      console.error('Ошибка удаления канала:', err);
+    } catch {
       toast.error('Ошибка удаления');
-    }
-  };
-
-  const handleRenameChannelSubmit = async (name) => {
-    if (!channelToEdit) return;
-    try {
-      await axios.patch(`/api/v1/channels/${channelToEdit.id}`, { name: name.trim() });
-      toast.success('Канал переименован');
-      closeModal();
-      dispatch(renameChannelAction({ id: channelToEdit.id, name: name.trim() }));
-    } catch (err) {
-      console.error('Ошибка переименования канала:', err);
-      toast.error('Ошибка соединения');
-    }
-  };
-
-  const handleCreateChannelSubmit = async (name) => {
-    try {
-      await axios.post('/api/v1/channels', { name: name.trim() });
-      toast.success('Канал создан');
-      closeModal();
-    } catch (err) {
-      console.error('Ошибка добавления канала:', err);
-      toast.error('Ошибка соединения');
     }
   };
 
@@ -191,24 +115,24 @@ const HomePage = () => {
         .test('unique', 'Такой канал уже существует', (value) => {
           if (!value) return false;
           const existing = channels.map((c) => c.name.toLowerCase());
-          if (channelToEdit) {
-            const idx = existing.indexOf(channelToEdit.name.toLowerCase());
-            if (idx !== -1) existing.splice(idx, 1);
+          if (modalInfo.channel) {
+            existing.splice(existing.indexOf(modalInfo.channel.name.toLowerCase()), 1);
           }
           return !existing.includes(value.toLowerCase());
         }),
     }),
-    validateOnChange: false,
-    validateOnBlur: true,
     onSubmit: async ({ name }, { setSubmitting, setErrors, resetForm }) => {
       try {
-        if (modalMode === 'rename') {
-          await handleRenameChannelSubmit(name);
+        if (modalInfo.channel) {
+          await axios.patch(`/api/v1/channels/${modalInfo.channel.id}`, { name: name.trim() });
+          toast.success('Канал переименован');
         } else {
-          await handleCreateChannelSubmit(name);
+          await axios.post('/api/v1/channels', { name: name.trim() });
+          toast.success('Канал создан');
         }
+        closeModal();
         resetForm();
-      } catch (err) {
+      } catch {
         setErrors({ name: 'Ошибка соединения' });
       } finally {
         setSubmitting(false);
@@ -222,10 +146,10 @@ const HomePage = () => {
   return (
     <div className="chat-container">
       <div className="sidebar">
-        <div className="sidebar-header d-flex justify-content-between align-items-center">
+        <div className="sidebar-header">
           <span>Каналы</span>
           <button
-            onClick={() => { setChannelToEdit(null); openModal('add', null); formik.setFieldValue('name', ''); }}
+            onClick={() => openModal(null)}
             className="btn btn-primary btn-sm"
             aria-label="Добавить канал"
             type="button"
@@ -233,73 +157,43 @@ const HomePage = () => {
             +
           </button>
         </div>
-
         <ul className="list-group channel-list">
-          {channels.map((channel) => {
-            const isActive = activeChannel?.id === channel.id;
-            const isManaged = !NON_MANAGED_CHANNELS.includes(channel.name);
-            return (
-              <li
-                key={channel.id}
-                className="list-group-item p-0 border-0 d-flex justify-content-between align-items-center"
+          {channels.map((channel) => (
+            <li
+              key={channel.id}
+              className="list-group-item p-0 border-0 d-flex justify-content-between align-items-center"
+            >
+              <button
+                type="button"
+                aria-label={filter.clean(channel.name)}
+                onClick={() => setActiveChannel(channel)}
+                className={`w-100 text-start btn btn-light ${
+                  activeChannel?.id === channel.id ? 'active' : ''
+                }`}
               >
-                <div className="d-flex align-items-center w-100">
-                  <button
-                    type="button"
-                    aria-label={filter.clean(channel.name)}
-                    onClick={() => setActiveChannel(channel)}
-                    className={`w-100 text-start btn btn-light text-truncate ${isActive ? 'active' : ''}`}
-                    style={{ textAlign: 'left' }}
-                  >
-                    <span>#</span> {filter.clean(channel.name)}
-                  </button>
-
-                  <div className="ms-1">
-                    {isManaged ? (
-                      <div className="btn-group">
-                        <button
-                          type="button"
-                          aria-label={`Управление каналом ${channel.name}`}
-                          className="btn btn-outline-secondary btn-sm"
-                          onClick={() => handleOpenActionMenu(channel.id)}
-                        >
-                          ⋮
-                        </button>
-
-                        {/* Simple menu rendered conditionally */}
-                        {openActionFor === channel.id && (
-                          <div className="action-menu dropdown-menu show" style={{ position: 'absolute' }}>
-                            <button
-                              type="button"
-                              className="dropdown-item"
-                              onClick={() => handleRequestRename(channel)}
-                            >
-                              Переименовать
-                            </button>
-                            <button
-                              type="button"
-                              className="dropdown-item"
-                              onClick={() => handleRequestDelete(channel)}
-                            >
-                              Удалить
-                            </button>
-                          </div>
-                        )}
-                      </div>
-                    ) : (
-                      <span className="text-muted small ms-2">—</span>
-                    )}
-                  </div>
-                </div>
-              </li>
-            );
-          })}
+                <span>#</span> {filter.clean(channel.name)}
+              </button>
+              {!['general', 'random'].includes(channel.name) && (
+                <button
+                  type="button"
+                  aria-label="Управление каналом"
+                  className="btn btn-outline-secondary btn-sm ms-1"
+                  onClick={() => {
+                    formik.setFieldValue('name', channel.name);
+                    openModal(channel);
+                  }}
+                >
+                  Управление
+                </button>
+              )}
+            </li>
+          ))}
         </ul>
       </div>
 
       {activeChannel ? (
         <div className="chat-main">
-          <div className="chat-header d-flex justify-content-between align-items-center">
+          <div className="chat-header">
             <span>#{filter.clean(activeChannel.name)}</span>
             <span className="message-count">
               {messages.filter((m) => m.channelId === activeChannel.id).length} сообщений
@@ -317,7 +211,7 @@ const HomePage = () => {
             <div ref={messagesEndRef} />
           </div>
 
-          <form onSubmit={handleSendMessage} className="message-form d-flex gap-2">
+          <form onSubmit={handleSendMessage} className="message-form">
             <input
               ref={messageInputRef}
               type="text"
@@ -337,85 +231,59 @@ const HomePage = () => {
         <div className="chat-placeholder">Выберите канал</div>
       )}
 
-      {/* Unified modal */}
-      {showModal && modalReady && (
-        <div
-          key={channelToEdit?.id || modalMode + '-new'}
-          className="modal show d-block"
-          tabIndex="-1"
-          onClick={closeModal}
-        >
+      {modalInfo.show && (
+        <div key={modalInfo.channel?.id || 'new'} className="modal show d-block" tabIndex="-1" onClick={closeModal}>
           <div className="modal-dialog" onClick={(e) => e.stopPropagation()}>
             <div className="modal-content">
-              {/* Modal header */}
               <div className="modal-header">
                 <h5 className="modal-title">
-                  {modalMode === 'add' && 'Добавить канал'}
-                  {modalMode === 'rename' && 'Переименовать канал'}
-                  {modalMode === 'remove' && 'Удалить канал'}
+                  {modalInfo.channel ? 'Переименовать канал' : 'Добавить канал'}
                 </h5>
                 <button type="button" className="btn-close" aria-label="Закрыть" onClick={closeModal} />
               </div>
-
-              {/* Modal body */}
               <div className="modal-body">
-                {modalMode === 'remove' ? (
-                  <>
-                    <p>Вы действительно хотите удалить канал &laquo;{channelToEdit?.name}&raquo;?</p>
-                  </>
-                ) : (
-                  <form onSubmit={formik.handleSubmit} noValidate>
-                    <div className="mb-3">
-                      <label htmlFor="channelName" className="form-label">
-                        Имя канала
-                      </label>
-                      <input
-                        id="channelName"
-                        name="name"
-                        type="text"
-                        value={formik.values.name}
-                        onChange={formik.handleChange}
-                        onBlur={formik.handleBlur}
-                        placeholder="Введите имя канала"
-                        autoFocus
-                        className={`form-control ${
-                          formik.errors.name && (formik.touched.name || formik.submitCount > 0) ? 'is-invalid' : ''
-                        }`}
-                      />
-                      {formik.errors.name && (formik.touched.name || formik.submitCount > 0) && (
-                        <div className="invalid-feedback d-block">{formik.errors.name}</div>
-                      )}
-                    </div>
-                  </form>
-                )}
-              </div>
-
-              {/* Modal footer */}
-              <div className="modal-footer">
-                <button type="button" onClick={closeModal} className="btn btn-secondary">
-                  Отменить
-                </button>
-
-                {modalMode === 'remove' ? (
-                  <button
-                    type="button"
-                    className="btn btn-danger"
-                    onClick={handleDeleteChannel}
-                  >
-                    Удалить
-                  </button>
-                ) : (
-                  <button
-                    type="button"
-                    className="btn btn-primary"
-                    onClick={() => {
-                      formik.handleSubmit();
-                    }}
-                    disabled={formik.isSubmitting}
-                  >
-                    Отправить
-                  </button>
-                )}
+                <form onSubmit={formik.handleSubmit} noValidate>
+                  <div className="mb-3">
+                    <label htmlFor="channelName" className="form-label">
+                      Имя канала
+                    </label>
+                    <input
+                      id="channelName"
+                      name="name"
+                      type="text"
+                      value={formik.values.name}
+                      onChange={formik.handleChange}
+                      onBlur={formik.handleBlur}
+                      placeholder="Введите имя канала"
+                      autoFocus
+                      className={`form-control ${
+                        formik.errors.name && (formik.touched.name || formik.submitCount > 0)
+                          ? 'is-invalid'
+                          : ''
+                      }`}
+                    />
+                    {formik.errors.name && (formik.touched.name || formik.submitCount > 0) && (
+                      <div className="invalid-feedback d-block">{formik.errors.name}</div>
+                    )}
+                  </div>
+                  <div className="modal-footer">
+                    <button type="button" onClick={closeModal} className="btn btn-secondary">
+                      Отменить
+                    </button>
+                    {modalInfo.channel && (
+                      <button
+                        type="button"
+                        onClick={handleDeleteChannel}
+                        className="btn btn-danger"
+                      >
+                        Удалить
+                      </button>
+                    )}
+                    <button type="submit" className="btn btn-primary" disabled={formik.isSubmitting}>
+                      Отправить
+                    </button>
+                  </div>
+                </form>
               </div>
             </div>
           </div>
