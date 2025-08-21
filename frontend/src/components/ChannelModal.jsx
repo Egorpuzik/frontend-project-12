@@ -1,7 +1,10 @@
 import React, { useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { useFormik } from 'formik';
 import * as Yup from 'yup';
 import { toast } from 'react-toastify';
+
+const modalRoot = document.getElementById('modal-root');
 
 const ChannelModal = ({ type, channel, channels, onClose, onSubmit, onDelete }) => {
   const isEdit = type === 'rename';
@@ -17,7 +20,7 @@ const ChannelModal = ({ type, channel, channels, onClose, onSubmit, onDelete }) 
         .test('unique', 'Такой канал уже существует', (value) => {
           if (!value) return false;
           const existing = channels.map((c) => c.name.toLowerCase());
-          if (isEdit) {
+          if (isEdit && channel) {
             existing.splice(existing.indexOf(channel.name.toLowerCase()), 1);
           }
           return !existing.includes(value.toLowerCase());
@@ -52,18 +55,27 @@ const ChannelModal = ({ type, channel, channels, onClose, onSubmit, onDelete }) 
     }
   };
 
-  return (
+  const modal = (
     <div className="modal show d-block" tabIndex="-1" onClick={onClose}>
       <div className="modal-dialog" onClick={(e) => e.stopPropagation()}>
         <div className="modal-content">
           <div className="modal-header">
-            <h5 className="modal-title">{isEdit ? 'Переименовать канал' : 'Добавить канал'}</h5>
-            <button type="button" className="btn-close" aria-label="Закрыть" onClick={onClose} />
+            <h5 className="modal-title">
+              {isEdit ? 'Переименовать канал' : 'Добавить канал'}
+            </h5>
+            <button
+              type="button"
+              className="btn-close"
+              aria-label="Закрыть"
+              onClick={onClose}
+            />
           </div>
           <div className="modal-body">
             <form onSubmit={formik.handleSubmit} noValidate>
               <div className="mb-3">
-                <label htmlFor="channelName" className="form-label">Имя канала</label>
+                <label htmlFor="channelName" className="form-label">
+                  Имя канала
+                </label>
                 <input
                   id="channelName"
                   name="name"
@@ -74,15 +86,27 @@ const ChannelModal = ({ type, channel, channels, onClose, onSubmit, onDelete }) 
                   placeholder="Введите имя канала"
                   autoFocus
                   className={`form-control ${
-                    formik.errors.name && (formik.touched.name || formik.submitCount > 0) ? 'is-invalid' : ''
+                    formik.errors.name &&
+                    (formik.touched.name || formik.submitCount > 0)
+                      ? 'is-invalid'
+                      : ''
                   }`}
                 />
-                {formik.errors.name && (formik.touched.name || formik.submitCount > 0) && (
-                  <div className="invalid-feedback d-block">{formik.errors.name}</div>
-                )}
+                {formik.errors.name &&
+                  (formik.touched.name || formik.submitCount > 0) && (
+                    <div className="invalid-feedback d-block">
+                      {formik.errors.name}
+                    </div>
+                  )}
               </div>
               <div className="modal-footer">
-                <button type="button" onClick={onClose} className="btn btn-secondary">Отменить</button>
+                <button
+                  type="button"
+                  onClick={onClose}
+                  className="btn btn-secondary"
+                >
+                  Отменить
+                </button>
                 {isEdit && channel && (
                   <button
                     type="button"
@@ -92,7 +116,11 @@ const ChannelModal = ({ type, channel, channels, onClose, onSubmit, onDelete }) 
                     Удалить
                   </button>
                 )}
-                <button type="submit" className="btn btn-primary" disabled={formik.isSubmitting}>
+                <button
+                  type="submit"
+                  className="btn btn-primary"
+                  disabled={formik.isSubmitting}
+                >
                   {isEdit ? 'Переименовать' : 'Создать'}
                 </button>
               </div>
@@ -102,6 +130,8 @@ const ChannelModal = ({ type, channel, channels, onClose, onSubmit, onDelete }) 
       </div>
     </div>
   );
+
+  return modalRoot ? createPortal(modal, modalRoot) : modal;
 };
 
 export default ChannelModal;

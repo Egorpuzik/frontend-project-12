@@ -1,10 +1,13 @@
 import React from 'react';
+import { createPortal } from 'react-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { useTranslation } from 'react-i18next';
 import { toast } from 'react-toastify';
 import { closeModal } from '../../store/modalsSlice';
 import { setCurrentChannelId } from '../../store/channelsSlice';
 import { useSocket } from '../../hooks';
+
+const modalRoot = document.getElementById('modal-root');
 
 const RemoveChannelModal = () => {
   const { t } = useTranslation();
@@ -34,7 +37,7 @@ const RemoveChannelModal = () => {
     });
   };
 
-  return (
+  const modal = (
     <div className="modal show d-block" tabIndex="-1" role="dialog">
       <div className="modal-dialog modal-dialog-centered" role="document">
         <div className="modal-content">
@@ -72,6 +75,8 @@ const RemoveChannelModal = () => {
       </div>
     </div>
   );
+
+  return modalRoot ? createPortal(modal, modalRoot) : modal;
 };
 
 export default RemoveChannelModal;
