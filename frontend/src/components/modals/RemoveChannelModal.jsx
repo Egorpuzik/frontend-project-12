@@ -1,10 +1,10 @@
 import React from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useTranslation } from 'react-i18next';
-import { closeModal } from '../../store/modalsSlice';
-import { useSocket } from '../../hooks';
-import { setCurrentChannelId } from '../../store/channelsSlice';
 import { toast } from 'react-toastify';
+import { closeModal } from '../../store/modalsSlice';
+import { setCurrentChannelId } from '../../store/channelsSlice';
+import { useSocket } from '../../hooks';
 
 const RemoveChannelModal = () => {
   const { t } = useTranslation();
@@ -16,6 +16,10 @@ const RemoveChannelModal = () => {
 
   if (!isOpen || !channel) return null;
 
+  const handleClose = () => {
+    dispatch(closeModal());
+  };
+
   const handleRemove = () => {
     socket.emit('removeChannel', { id: channel.id }, (response) => {
       if (response.status === 'ok') {
@@ -23,7 +27,7 @@ const RemoveChannelModal = () => {
           dispatch(setCurrentChannelId(1)); 
         }
         toast.success(t('toast.channelRemoved'));
-        dispatch(closeModal());
+        handleClose();
       } else {
         toast.error(t('toast.networkError'));
       }
@@ -40,7 +44,7 @@ const RemoveChannelModal = () => {
               type="button"
               className="btn-close"
               aria-label="Close"
-              onClick={() => dispatch(closeModal())}
+              onClick={handleClose}
             />
           </div>
           <div className="modal-body">
@@ -50,11 +54,16 @@ const RemoveChannelModal = () => {
             <button
               type="button"
               className="btn btn-secondary"
-              onClick={() => dispatch(closeModal())}
+              onClick={handleClose}
             >
               {t('modals.remove.cancel')}
             </button>
-            <button type="button" className="btn btn-danger" onClick={handleRemove}>
+            {/* эта кнопка должна совпадать с ожиданием теста */}
+            <button
+              type="button"
+              className="btn btn-danger"
+              onClick={handleRemove}
+            >
               {t('modals.remove.submit')}
             </button>
           </div>
