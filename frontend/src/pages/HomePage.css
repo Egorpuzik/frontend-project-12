@@ -5,25 +5,8 @@ html, body, #root {
   padding: 0;
 }
 
-.app-header {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 60px;
-  background-color: #ffffff;
-  border-bottom: 1px solid #ddd;
-  display: flex;
-  align-items: center;
-  padding: 0 20px;
-  font-size: 24px;
-  font-weight: 700;
-  color: #333;
-  z-index: 1000;
-}
-
 .chat-container {
-  padding-top: 60px; 
+  padding-top: 60px;
   height: calc(100vh - 60px);
   width: 100vw;
   display: flex;
@@ -58,12 +41,21 @@ html, body, #root {
   padding: 10px;
   margin: 0;
   flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.channel-list li {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
 }
 
 .channel-btn {
-  width: 100%;
+  flex: 1;
   text-align: left;
-  padding: 10px;
+  padding: 8px 10px;
   background: transparent;
   color: #000;
   border: none;
@@ -74,6 +66,16 @@ html, body, #root {
 .channel-btn.active {
   background: #495057;
   color: #fff;
+}
+
+.channel-manage-btn {
+  margin-left: 5px;
+  padding: 5px 8px;
+  font-size: 12px;
+  border: 1px solid #ced4da;
+  border-radius: 5px;
+  background: #f8f9fa;
+  cursor: pointer;
 }
 
 .chat-main {
@@ -87,12 +89,8 @@ html, body, #root {
   padding: 15px;
   border-bottom: 1px solid #ddd;
   font-weight: bold;
-}
-
-.message-count {
-  color: #6c757d;
-  font-weight: normal;
-  margin-left: 10px;
+  display: flex;
+  justify-content: space-between;
 }
 
 .message-list {
@@ -110,10 +108,6 @@ html, body, #root {
 .message-list::-webkit-scrollbar-thumb {
   background-color: #ccc;
   border-radius: 3px;
-}
-
-.message {
-  margin-bottom: 10px;
 }
 
 .message-form {
@@ -140,15 +134,7 @@ html, body, #root {
   cursor: pointer;
 }
 
-.message-form input:disabled,
-.message-form button:disabled {
-  background: #e9ecef;
-  color: #6c757d;
-  cursor: not-allowed;
-}
-
-.loading,
-.error {
+.loading, .error {
   display: flex;
   justify-content: center;
   align-items: center;
@@ -162,15 +148,6 @@ html, body, #root {
   font-weight: bold;
 }
 
-.chat-placeholder {
-  flex: 1;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  color: #6c757d;
-  font-size: 18px;
-}
-
 .modal-overlay {
   position: fixed;
   top: 0;
@@ -181,7 +158,7 @@ html, body, #root {
   display: flex;
   justify-content: center;
   align-items: center;
-  z-index: 5000; 
+  z-index: 5000;
 }
 
 .modal {
@@ -190,7 +167,7 @@ html, body, #root {
   border-radius: 8px;
   width: 400px;
   max-width: 90%;
-  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+  box-shadow: 0 5px 15px rgba(0,0,0,0.3);
   position: relative;
 }
 
@@ -206,10 +183,10 @@ html, body, #root {
   display: flex;
   justify-content: flex-end;
   margin-top: 10px;
+  gap: 10px;
 }
 
 .btn-cancel {
-  margin-right: 10px;
   padding: 8px 15px;
   border: none;
   background: #6c757d;

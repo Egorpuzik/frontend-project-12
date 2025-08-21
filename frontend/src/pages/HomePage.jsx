@@ -16,7 +16,6 @@ const HomePage = () => {
   const { channels = [], messages = [], status = 'idle', error } = useSelector((state) => state.chat || {});
 
   const [messageText, setMessageText] = useState('');
-  const [disconnected, setDisconnected] = useState(false);
   const [activeChannel, setActiveChannel] = useState(null);
   const [modalInfo, setModalInfo] = useState({ show: false, channel: null });
 
@@ -34,34 +33,21 @@ const HomePage = () => {
     const socket = getSocket();
     if (!socket) return;
 
-    const handleNewMessage = (message) => dispatch(newMessage(message));
-    const handleNewChannel = (channel) => dispatch(addChannel(channel));
-    const handleRemoveChannel = ({ id }) => dispatch(removeChannel(id));
-    const handleRenameChannel = (channel) => dispatch(renameChannel(channel));
-    const onDisconnect = () => setDisconnected(true);
-    const onConnect = () => setDisconnected(false);
-
-    socket.on('newMessage', handleNewMessage);
-    socket.on('newChannel', handleNewChannel);
-    socket.on('removeChannel', handleRemoveChannel);
-    socket.on('renameChannel', handleRenameChannel);
-    socket.on('disconnect', onDisconnect);
-    socket.on('connect', onConnect);
-
-    setDisconnected(!socket.connected);
+    socket.on('newMessage', (msg) => dispatch(newMessage(msg)));
+    socket.on('newChannel', (ch) => dispatch(addChannel(ch)));
+    socket.on('removeChannel', ({ id }) => dispatch(removeChannel(id)));
+    socket.on('renameChannel', (ch) => dispatch(renameChannel(ch)));
 
     return () => {
-      socket.off('newMessage', handleNewMessage);
-      socket.off('newChannel', handleNewChannel);
-      socket.off('removeChannel', handleRemoveChannel);
-      socket.off('renameChannel', handleRenameChannel);
-      socket.off('disconnect', onDisconnect);
-      socket.off('connect', onConnect);
+      socket.off('newMessage');
+      socket.off('newChannel');
+      socket.off('removeChannel');
+      socket.off('renameChannel');
     };
   }, [dispatch]);
 
   useEffect(() => {
-    if (channels.length > 0 && !activeChannel) {
+    if (channels.length && !activeChannel) {
       const general = channels.find((c) => c.name === 'general') || channels[0];
       setActiveChannel(general);
     }
@@ -87,7 +73,7 @@ const HomePage = () => {
       });
       setMessageText('');
       messageInputRef.current?.focus();
-    } catch (err) {
+    } catch {
       toast.error('Ошибка соединения');
     }
   };
@@ -97,8 +83,8 @@ const HomePage = () => {
     try {
       await axios.delete(`/api/v1/channels/${modalInfo.channel.id}`);
       dispatch(removeChannel(modalInfo.channel.id));
-      toast.success('Канал удалён');
       closeModal();
+      toast.success('Канал удалён');
     } catch {
       toast.error('Ошибка удаления');
     }
@@ -108,7 +94,7 @@ const HomePage = () => {
     initialValues: { name: '' },
     validationSchema: Yup.object({
       name: Yup.string()
-        .transform((v) => (typeof v === 'string' ? v.trim() : ''))
+        .trim()
         .min(3, 'От 3 до 20 символов')
         .max(20, 'От 3 до 20 символов')
         .required('Обязательное поле')
@@ -124,10 +110,10 @@ const HomePage = () => {
     onSubmit: async ({ name }, { setSubmitting, setErrors, resetForm }) => {
       try {
         if (modalInfo.channel) {
-          await axios.patch(`/api/v1/channels/${modalInfo.channel.id}`, { name: name.trim() });
+          await axios.patch(`/api/v1/channels/${modalInfo.channel.id}`, { name });
           toast.success('Канал переименован');
         } else {
-          await axios.post('/api/v1/channels', { name: name.trim() });
+          await axios.post('/api/v1/channels', { name });
           toast.success('Канал создан');
         }
         closeModal();
@@ -140,50 +126,38 @@ const HomePage = () => {
     },
   });
 
-  if (status === 'loading') return <div className="loading">Загрузка чата...</div>;
-  if (error) return <div className="error">Ошибка загрузки: {error}</div>;
+  if (status === 'loading') return <div>Загрузка...</div>;
+  if (error) return <div>Ошибка: {error}</div>;
 
   return (
     <div className="chat-container">
       <div className="sidebar">
         <div className="sidebar-header">
           <span>Каналы</span>
-          <button
-            onClick={() => openModal(null)}
-            className="btn btn-primary btn-sm"
-            aria-label="Добавить канал"
-            type="button"
-          >
+          <button type="button" className="btn btn-primary btn-sm" onClick={() => openModal(null)}>
             +
           </button>
         </div>
         <ul className="list-group channel-list">
           {channels.map((channel) => (
-            <li
-              key={channel.id}
-              className="list-group-item p-0 border-0 d-flex justify-content-between align-items-center"
-            >
+            <li key={channel.id} className="list-group-item d-flex justify-content-between align-items-center p-0">
               <button
                 type="button"
-                aria-label={filter.clean(channel.name)}
+                className={`btn w-100 text-start ${activeChannel?.id === channel.id ? 'active' : ''}`}
                 onClick={() => setActiveChannel(channel)}
-                className={`w-100 text-start btn btn-light ${
-                  activeChannel?.id === channel.id ? 'active' : ''
-                }`}
               >
-                <span>#</span> {filter.clean(channel.name)}
+                # {filter.clean(channel.name)}
               </button>
               {!['general', 'random'].includes(channel.name) && (
                 <button
                   type="button"
-                  aria-label="Управление каналом"
                   className="btn btn-outline-secondary btn-sm ms-1"
                   onClick={() => {
                     formik.setFieldValue('name', channel.name);
                     openModal(channel);
                   }}
                 >
-                  Управление
+                  Управление каналом
                 </button>
               )}
             </li>
@@ -191,96 +165,68 @@ const HomePage = () => {
         </ul>
       </div>
 
-      {activeChannel ? (
+      {activeChannel && (
         <div className="chat-main">
           <div className="chat-header">
             <span>#{filter.clean(activeChannel.name)}</span>
-            <span className="message-count">
-              {messages.filter((m) => m.channelId === activeChannel.id).length} сообщений
-            </span>
+            <span>{messages.filter((m) => m.channelId === activeChannel.id).length} сообщений</span>
           </div>
-
           <div className="message-list">
             {messages
               .filter((m) => m.channelId === activeChannel.id)
               .map((msg) => (
-                <div key={msg.id} className="message">
+                <div key={msg.id}>
                   <strong>{msg.username}:</strong> {filter.clean(msg.body)}
                 </div>
               ))}
             <div ref={messagesEndRef} />
           </div>
-
           <form onSubmit={handleSendMessage} className="message-form">
             <input
               ref={messageInputRef}
-              type="text"
-              aria-label="Новое сообщение"
               value={messageText}
               onChange={(e) => setMessageText(e.target.value)}
               placeholder="Введите сообщение..."
-              disabled={disconnected}
               className="form-control"
             />
-            <button type="submit" disabled={disconnected} className="btn btn-primary">
+            <button type="submit" className="btn btn-primary">
               ➤
             </button>
           </form>
         </div>
-      ) : (
-        <div className="chat-placeholder">Выберите канал</div>
       )}
 
       {modalInfo.show && (
-        <div key={modalInfo.channel?.id || 'new'} className="modal show d-block" tabIndex="-1" onClick={closeModal}>
+        <div className="modal show d-block" onClick={closeModal}>
           <div className="modal-dialog" onClick={(e) => e.stopPropagation()}>
             <div className="modal-content">
               <div className="modal-header">
-                <h5 className="modal-title">
-                  {modalInfo.channel ? 'Переименовать канал' : 'Добавить канал'}
-                </h5>
-                <button type="button" className="btn-close" aria-label="Закрыть" onClick={closeModal} />
+                <h5 className="modal-title">{modalInfo.channel ? 'Переименовать канал' : 'Добавить канал'}</h5>
+                <button type="button" className="btn-close" onClick={closeModal} />
               </div>
               <div className="modal-body">
-                <form onSubmit={formik.handleSubmit} noValidate>
-                  <div className="mb-3">
-                    <label htmlFor="channelName" className="form-label">
-                      Имя канала
-                    </label>
-                    <input
-                      id="channelName"
-                      name="name"
-                      type="text"
-                      value={formik.values.name}
-                      onChange={formik.handleChange}
-                      onBlur={formik.handleBlur}
-                      placeholder="Введите имя канала"
-                      autoFocus
-                      className={`form-control ${
-                        formik.errors.name && (formik.touched.name || formik.submitCount > 0)
-                          ? 'is-invalid'
-                          : ''
-                      }`}
-                    />
-                    {formik.errors.name && (formik.touched.name || formik.submitCount > 0) && (
-                      <div className="invalid-feedback d-block">{formik.errors.name}</div>
-                    )}
-                  </div>
+                <form onSubmit={formik.handleSubmit}>
+                  <input
+                    id="channelName"
+                    name="name"
+                    type="text"
+                    value={formik.values.name}
+                    onChange={formik.handleChange}
+                    autoFocus
+                    className={`form-control ${formik.errors.name ? 'is-invalid' : ''}`}
+                  />
+                  {formik.errors.name && <div className="invalid-feedback">{formik.errors.name}</div>}
                   <div className="modal-footer">
-                    <button type="button" onClick={closeModal} className="btn btn-secondary">
+                    <button type="button" className="btn btn-secondary" onClick={closeModal}>
                       Отменить
                     </button>
                     {modalInfo.channel && (
-                      <button
-                        type="button"
-                        onClick={handleDeleteChannel}
-                        className="btn btn-danger"
-                      >
+                      <button type="button" className="btn btn-danger" onClick={handleDeleteChannel}>
                         Удалить
                       </button>
                     )}
                     <button type="submit" className="btn btn-primary" disabled={formik.isSubmitting}>
-                      Отправить
+                      Сохранить
                     </button>
                   </div>
                 </form>
