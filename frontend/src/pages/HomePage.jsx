@@ -12,12 +12,21 @@ import './HomePage.css';
 const HomePage = () => {
   const dispatch = useDispatch();
   const { user } = useAuth();
-  const { channels = [], messages = [], status = 'idle', error } = useSelector((state) => state.chat || {});
+  const {
+    channels = [],
+    messages = [],
+    status = 'idle',
+    error,
+  } = useSelector((state) => state.chat || {});
 
   const [messageText, setMessageText] = useState('');
   const [disconnected, setDisconnected] = useState(false);
   const [activeChannel, setActiveChannel] = useState(null);
-  const [modalProps, setModalProps] = useState({ show: false, type: 'add', channel: null });
+  const [modalProps, setModalProps] = useState({
+    show: false,
+    type: 'add',
+    channel: null,
+  });
 
   const messagesEndRef = useRef(null);
   const messageInputRef = useRef(null);
@@ -89,22 +98,23 @@ const HomePage = () => {
     }
   };
 
-  const openModal = (type, channel = null) => setModalProps({ show: true, type, channel });
-  const closeModal = () => setModalProps({ show: false, type: 'add', channel: null });
+  const openModal = (type, channel = null) =>
+    setModalProps({ show: true, type, channel });
+  const closeModal = () =>
+    setModalProps({ show: false, type: 'add', channel: null });
 
   const handleSubmitChannel = async (name, channel) => {
     try {
       if (channel) {
         await axios.patch(`/api/v1/channels/${channel.id}`, { name });
         dispatch(renameChannel({ ...channel, name }));
-        closeModal();
         toast.success('Канал переименован');
       } else {
         const { data } = await axios.post('/api/v1/channels', { name });
         dispatch(addChannel(data));
-        closeModal();
         toast.success('Канал создан');
       }
+      closeModal();
     } catch (err) {
       console.error('Ошибка добавления/переименования канала:', err);
       toast.error('Ошибка соединения');
@@ -117,19 +127,22 @@ const HomePage = () => {
     try {
       await axios.delete(`/api/v1/channels/${channel.id}`);
       dispatch(removeChannel(channel.id));
-      closeModal(); 
-      toast.success('Канал удалён'); 
+      toast.success('Канал удалён');
 
       if (activeChannel?.id === channel.id) {
-        setActiveChannel(channels.find((c) => c.name === 'general') || channels[0] || null);
+        setActiveChannel(
+          channels.find((c) => c.name === 'general') || channels[0] || null,
+        );
       }
     } catch (err) {
       console.error('Ошибка удаления канала:', err);
       toast.error('Ошибка удаления');
+      throw err;
     }
   };
 
-  if (status === 'loading') return <div className="loading">Загрузка чата...</div>;
+  if (status === 'loading')
+    return <div className="loading">Загрузка чата...</div>;
   if (error) return <div className="error">Ошибка загрузки: {error}</div>;
 
   return (
@@ -137,18 +150,29 @@ const HomePage = () => {
       <div className="sidebar">
         <div className="sidebar-header">
           <span>Каналы</span>
-          <button onClick={() => openModal('add')} className="btn btn-primary btn-sm" aria-label="Добавить канал">+</button>
+          <button
+            onClick={() => openModal('add')}
+            className="btn btn-primary btn-sm"
+            aria-label="Добавить канал"
+          >
+            +
+          </button>
         </div>
         <ul className="list-group channel-list">
           {channels.map((channel) => {
             const canEdit = !['general', 'random'].includes(channel.name);
             return (
-              <li key={channel.id} className="list-group-item p-0 border-0 d-flex justify-content-between align-items-center">
+              <li
+                key={channel.id}
+                className="list-group-item p-0 border-0 d-flex justify-content-between align-items-center"
+              >
                 <button
                   type="button"
                   aria-label={filter.clean(channel.name)}
                   onClick={() => setActiveChannel(channel)}
-                  className={`w-100 text-start btn btn-light ${activeChannel?.id === channel.id ? 'active' : ''}`}
+                  className={`w-100 text-start btn btn-light ${
+                    activeChannel?.id === channel.id ? 'active' : ''
+                  }`}
                 >
                   <span>#</span> {filter.clean(channel.name)}
                 </button>
@@ -173,16 +197,21 @@ const HomePage = () => {
           <div className="chat-header">
             <span>#{filter.clean(activeChannel.name)}</span>
             <span className="message-count">
-              {messages.filter((m) => m.channelId === activeChannel.id).length} сообщений
+              {
+                messages.filter((m) => m.channelId === activeChannel.id).length
+              }{' '}
+              сообщений
             </span>
           </div>
 
           <div className="message-list">
-            {messages.filter((m) => m.channelId === activeChannel.id).map((msg) => (
-              <div key={msg.id} className="message">
-                <strong>{msg.username}:</strong> {filter.clean(msg.body)}
-              </div>
-            ))}
+            {messages
+              .filter((m) => m.channelId === activeChannel.id)
+              .map((msg) => (
+                <div key={msg.id} className="message">
+                  <strong>{msg.username}:</strong> {filter.clean(msg.body)}
+                </div>
+              ))}
             <div ref={messagesEndRef} />
           </div>
 
@@ -197,7 +226,13 @@ const HomePage = () => {
               disabled={disconnected}
               className="form-control message-input"
             />
-            <button type="submit" disabled={disconnected} className="btn btn-primary send-btn">➤</button>
+            <button
+              type="submit"
+              disabled={disconnected}
+              className="btn btn-primary send-btn"
+            >
+              ➤
+            </button>
           </form>
         </div>
       ) : (
