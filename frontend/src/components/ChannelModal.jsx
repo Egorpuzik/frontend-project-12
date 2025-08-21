@@ -42,6 +42,13 @@ const ChannelModal = ({ type, channel, channels, onClose, onSubmit, onDelete }) 
     formik.resetForm();
   }, [channel, isEdit]);
 
+  const handleDelete = () => {
+    if (!channel) return;
+    onClose(); 
+    toast.dismiss();
+    onDelete(channel); 
+  };
+
   return (
     <div className="modal show d-block" tabIndex="-1" onClick={onClose}>
       <div className="modal-dialog" onClick={(e) => e.stopPropagation()}>
@@ -76,10 +83,7 @@ const ChannelModal = ({ type, channel, channels, onClose, onSubmit, onDelete }) 
                 {isEdit && channel && (
                   <button
                     type="button"
-                    onClick={() => {
-                      toast.dismiss();
-                      onDelete(channel);
-                    }}
+                    onClick={handleDelete}
                     className="btn btn-danger"
                   >
                     Удалить

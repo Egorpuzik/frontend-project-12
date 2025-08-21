@@ -26,8 +26,8 @@ const RemoveChannelModal = () => {
         if (channel.id === currentChannelId) {
           dispatch(setCurrentChannelId(1));
         }
-        toast.success(t('toast.channelRemoved'));
-        handleClose();
+        handleClose(); 
+        toast.success(t('toast.channelRemoved')); 
       } else {
         toast.error(t('toast.networkError'));
       }
