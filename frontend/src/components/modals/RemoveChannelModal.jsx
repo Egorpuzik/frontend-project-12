@@ -24,7 +24,7 @@ const RemoveChannelModal = () => {
     socket.emit('removeChannel', { id: channel.id }, (response) => {
       if (response.status === 'ok') {
         if (channel.id === currentChannelId) {
-          dispatch(setCurrentChannelId(1)); 
+          dispatch(setCurrentChannelId(1));
         }
         toast.success(t('toast.channelRemoved'));
         handleClose();
@@ -58,10 +58,10 @@ const RemoveChannelModal = () => {
             >
               {t('modals.remove.cancel')}
             </button>
-            {/* эта кнопка должна совпадать с ожиданием теста */}
             <button
               type="button"
               className="btn btn-danger"
+              data-testid="remove-channel"
               onClick={handleRemove}
             >
               {t('modals.remove.submit')}
