@@ -28,7 +28,6 @@ const ChannelModal = ({ type, channel, channels, onClose, onSubmit, onDelete }) 
     onSubmit: async ({ name }, { setSubmitting, setErrors }) => {
       try {
         await onSubmit(name.trim(), channel);
-        onClose();
       } catch (err) {
         console.error('Ошибка добавления/переименования канала:', err);
         setErrors({ name: 'Ошибка соединения' });

@@ -116,7 +116,7 @@ const HomePage = () => {
       await axios.delete(`/api/v1/channels/${channel.id}`);
       dispatch(removeChannel(channel.id));
       toast.success('Канал удалён');
-      closeModal();
+      setTimeout(() => closeModal(), 200);
       if (activeChannel?.id === channel.id) {
         setActiveChannel(channels.find((c) => c.name === 'general') || channels[0] || null);
       }
@@ -134,9 +134,7 @@ const HomePage = () => {
       <div className="sidebar">
         <div className="sidebar-header">
           <span>Каналы</span>
-          <button onClick={() => openModal('add')} className="btn btn-primary btn-sm" aria-label="Добавить канал">
-            +
-          </button>
+          <button onClick={() => openModal('add')} className="btn btn-primary btn-sm" aria-label="Добавить канал">+</button>
         </div>
         <ul className="list-group channel-list">
           {channels.map((channel) => {
@@ -177,13 +175,11 @@ const HomePage = () => {
           </div>
 
           <div className="message-list">
-            {messages
-              .filter((m) => m.channelId === activeChannel.id)
-              .map((msg) => (
-                <div key={msg.id} className="message">
-                  <strong>{msg.username}:</strong> {filter.clean(msg.body)}
-                </div>
-              ))}
+            {messages.filter((m) => m.channelId === activeChannel.id).map((msg) => (
+              <div key={msg.id} className="message">
+                <strong>{msg.username}:</strong> {filter.clean(msg.body)}
+              </div>
+            ))}
             <div ref={messagesEndRef} />
           </div>
 
@@ -198,9 +194,7 @@ const HomePage = () => {
               disabled={disconnected}
               className="form-control message-input"
             />
-            <button type="submit" disabled={disconnected} className="btn btn-primary send-btn">
-              ➤
-            </button>
+            <button type="submit" disabled={disconnected} className="btn btn-primary send-btn">➤</button>
           </form>
         </div>
       ) : (
