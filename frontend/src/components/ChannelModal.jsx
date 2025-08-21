@@ -64,7 +64,9 @@ const ChannelModal = ({ type, channel, channels, onClose, onSubmit, onDelete }) 
                   onBlur={formik.handleBlur}
                   placeholder="Введите имя канала"
                   autoFocus
-                  className={`form-control ${formik.errors.name && (formik.touched.name || formik.submitCount > 0) ? 'is-invalid' : ''}`}
+                  className={`form-control ${
+                    formik.errors.name && (formik.touched.name || formik.submitCount > 0) ? 'is-invalid' : ''
+                  }`}
                 />
                 {formik.errors.name && (formik.touched.name || formik.submitCount > 0) && (
                   <div className="invalid-feedback d-block">{formik.errors.name}</div>
@@ -72,7 +74,7 @@ const ChannelModal = ({ type, channel, channels, onClose, onSubmit, onDelete }) 
               </div>
               <div className="modal-footer">
                 <button type="button" onClick={onClose} className="btn btn-secondary">Отменить</button>
-                {isEdit && (
+                {isEdit && channel && (
                   <button
                     type="button"
                     onClick={() => onDelete(channel)}

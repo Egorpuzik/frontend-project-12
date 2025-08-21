@@ -89,12 +89,25 @@ const HomePage = () => {
     }
   };
 
-  const openModal = (type, channel = null) => {
-    setModalProps({ show: true, type, channel });
-  };
+  const openModal = (type, channel = null) => setModalProps({ show: true, type, channel });
+  const closeModal = () => setModalProps({ show: false, type: 'add', channel: null });
 
-  const closeModal = () => {
-    setModalProps({ show: false, type: 'add', channel: null });
+  const handleSubmitChannel = async (name, channel) => {
+    try {
+      if (channel) {
+        await axios.patch(`/api/v1/channels/${channel.id}`, { name });
+        dispatch(renameChannel({ ...channel, name }));
+        toast.success('Канал переименован');
+      } else {
+        const { data } = await axios.post('/api/v1/channels', { name });
+        dispatch(addChannel(data));
+        toast.success('Канал создан');
+      }
+      closeModal();
+    } catch (err) {
+      console.error('Ошибка добавления/переименования канала:', err);
+      throw err;
+    }
   };
 
   const handleDeleteChannel = async (channel) => {
@@ -104,24 +117,12 @@ const HomePage = () => {
       dispatch(removeChannel(channel.id));
       toast.success('Канал удалён');
       closeModal();
+      if (activeChannel?.id === channel.id) {
+        setActiveChannel(channels.find((c) => c.name === 'general') || channels[0] || null);
+      }
     } catch (err) {
       console.error('Ошибка удаления канала:', err);
       toast.error('Ошибка удаления');
-    }
-  };
-
-  const handleSubmitChannel = async (name, channel) => {
-    try {
-      if (channel) {
-        await axios.patch(`/api/v1/channels/${channel.id}`, { name });
-        toast.success('Канал переименован');
-      } else {
-        await axios.post('/api/v1/channels', { name });
-        toast.success('Канал создан');
-      }
-    } catch (err) {
-      console.error('Ошибка добавления/переименования канала:', err);
-      throw err;
     }
   };
 
@@ -133,12 +134,7 @@ const HomePage = () => {
       <div className="sidebar">
         <div className="sidebar-header">
           <span>Каналы</span>
-          <button
-            onClick={() => openModal('add')}
-            className="btn btn-primary btn-sm"
-            aria-label="Добавить канал"
-            type="button"
-          >
+          <button onClick={() => openModal('add')} className="btn btn-primary btn-sm" aria-label="Добавить канал">
             +
           </button>
         </div>
