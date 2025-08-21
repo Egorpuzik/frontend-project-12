@@ -42,11 +42,14 @@ const ChannelModal = ({ type, channel, channels, onClose, onSubmit, onDelete }) 
     formik.resetForm();
   }, [channel, isEdit]);
 
-  const handleDelete = () => {
+  const handleDelete = async () => {
     if (!channel) return;
-    onClose(); 
     toast.dismiss();
-    onDelete(channel); 
+    try {
+      await onDelete(channel);
+    } finally {
+      onClose();
+    }
   };
 
   return (
