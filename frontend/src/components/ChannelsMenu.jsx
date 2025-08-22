@@ -19,11 +19,31 @@ const ChannelsMenu = ({ channel }) => {
 
   return (
     <div className="dropdown">
-      <button type="button">...</button>
-      <div className="dropdown-menu">
-        <button type="button" onClick={handleRename}>Rename</button>
-        <button type="button" onClick={handleRemove}>Remove</button>
-      </div>
+      <button
+        className="btn btn-sm btn-outline-secondary dropdown-toggle"
+        type="button"
+        id={`dropdown-${channel.id}`}
+        data-bs-toggle="dropdown"
+        aria-expanded="false"
+      >
+        <span className="visually-hidden">Управление каналом</span>
+      </button>
+      <ul className="dropdown-menu" aria-labelledby={`dropdown-${channel.id}`}>
+        <li>
+          <button type="button" className="dropdown-item" onClick={handleRename}>
+            Переименовать
+          </button>
+        </li>
+        <li>
+          <button
+            type="button"
+            className="dropdown-item text-danger"
+            onClick={handleRemove}
+          >
+            Удалить
+          </button>
+        </li>
+      </ul>
     </div>
   );
 };
