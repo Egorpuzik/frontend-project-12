@@ -1,7 +1,6 @@
 import React from 'react';
 import { createPortal } from 'react-dom';
 import { useDispatch, useSelector } from 'react-redux';
-import { useTranslation } from 'react-i18next';
 import { toast } from 'react-toastify';
 import { closeModal } from '../../store/modalsSlice';
 import { setCurrentChannelId } from '../../store/channelsSlice';
@@ -10,7 +9,6 @@ import { useSocket } from '../../hooks';
 const modalRoot = document.getElementById('modal-root');
 
 const RemoveChannelModal = () => {
-  const { t } = useTranslation();
   const dispatch = useDispatch();
   const socket = useSocket();
 
@@ -30,9 +28,9 @@ const RemoveChannelModal = () => {
           dispatch(setCurrentChannelId(1));
         }
         handleClose();
-        toast.success(t('toast.channelRemoved'));
+        toast.success('Канал удалён');
       } else {
-        toast.error(t('toast.networkError'));
+        toast.error('Ошибка сети');
       }
     });
   };
@@ -42,16 +40,16 @@ const RemoveChannelModal = () => {
       <div className="modal-dialog modal-dialog-centered" role="document">
         <div className="modal-content">
           <div className="modal-header">
-            <h5 className="modal-title">{t('modals.remove.header')}</h5>
+            <h5 className="modal-title">Удалить канал</h5>
             <button
               type="button"
               className="btn-close"
-              aria-label={t('modals.remove.cancel')}
+              aria-label="Закрыть"
               onClick={handleClose}
             />
           </div>
           <div className="modal-body">
-            <p>{t('modals.remove.body')}</p>
+            <p>Вы уверены, что хотите удалить канал «{channel.name}»?</p>
           </div>
           <div className="modal-footer">
             <button
@@ -59,16 +57,14 @@ const RemoveChannelModal = () => {
               className="btn btn-secondary"
               onClick={handleClose}
             >
-              {t('modals.remove.cancel')}
+              Отменить
             </button>
             <button
               type="button"
               className="btn btn-danger"
-              aria-label="Удалить"
-              data-testid="remove-channel"
               onClick={handleRemove}
             >
-              {t('modals.remove.submit')}
+              Удалить
             </button>
           </div>
         </div>
