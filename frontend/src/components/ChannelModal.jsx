@@ -4,13 +4,13 @@ import { useFormik } from 'formik';
 import * as Yup from 'yup';
 import { toast } from 'react-toastify';
 
-const modalRoot = document.getElementById('modal-root');
+const modalRoot = typeof document !== 'undefined' ? document.getElementById('modal-root') : null;
 
-const ChannelModal = ({ type, channel, channels, onClose, onSubmit, onDelete }) => {
-  const isEdit = type === 'rename';
+const ChannelModal = ({ type, channel, channels, onClose, onSubmit }) => {
+  const isRename = type === 'rename';
 
   const formik = useFormik({
-    initialValues: { name: isEdit && channel ? channel.name : '' },
+    initialValues: { name: isRename && channel ? channel.name : '' },
     validationSchema: Yup.object({
       name: Yup.string()
         .trim()
@@ -19,20 +19,22 @@ const ChannelModal = ({ type, channel, channels, onClose, onSubmit, onDelete }) 
         .required('Обязательное поле')
         .test('unique', 'Такой канал уже существует', (value) => {
           if (!value) return false;
-          const existing = channels.map((c) => c.name.toLowerCase());
-          if (isEdit && channel) {
-            existing.splice(existing.indexOf(channel.name.toLowerCase()), 1);
+          const list = channels.map((c) => c.name.toLowerCase());
+
+          if (isRename && channel) {
+            const idx = list.indexOf(channel.name.toLowerCase());
+            if (idx !== -1) list.splice(idx, 1);
           }
-          return !existing.includes(value.toLowerCase());
+          return !list.includes(value.toLowerCase());
         }),
     }),
     validateOnChange: false,
     validateOnBlur: true,
     onSubmit: async ({ name }, { setSubmitting, setErrors }) => {
       try {
-        await onSubmit(name.trim(), channel);
-      } catch (err) {
-        console.error('Ошибка добавления/переименования канала:', err);
+        await onSubmit(name.trim(), isRename ? channel : null);
+      } catch (e) {
+        console.error('Ошибка добавления/переименования канала:', e);
         setErrors({ name: 'Ошибка соединения' });
         toast.error('Ошибка соединения');
       } finally {
@@ -42,26 +44,28 @@ const ChannelModal = ({ type, channel, channels, onClose, onSubmit, onDelete }) 
   });
 
   useEffect(() => {
-    formik.resetForm();
-  }, [channel, isEdit]);
-
-  const handleDelete = async () => {
-    if (!channel) return;
-    toast.dismiss();
-    try {
-      await onDelete(channel);
-    } finally {
-      onClose();
-    }
-  };
+    formik.resetForm({
+      values: { name: isRename && channel ? channel.name : '' },
+    });
+  }, [isRename, channel?.id]);
 
   const modal = (
-    <div className="modal show d-block" tabIndex="-1" onClick={onClose}>
-      <div className="modal-dialog" onClick={(e) => e.stopPropagation()}>
+    <div
+      className="modal show d-block"
+      tabIndex="-1"
+      role="dialog"
+      aria-modal="true"
+      onClick={onClose}
+    >
+      <div
+        className="modal-dialog"
+        role="document"
+        onClick={(e) => e.stopPropagation()}
+      >
         <div className="modal-content">
           <div className="modal-header">
             <h5 className="modal-title">
-              {isEdit ? 'Переименовать канал' : 'Добавить канал'}
+              {isRename ? 'Переименовать канал' : 'Добавить канал'}
             </h5>
             <button
               type="button"
@@ -70,6 +74,7 @@ const ChannelModal = ({ type, channel, channels, onClose, onSubmit, onDelete }) 
               onClick={onClose}
             />
           </div>
+
           <div className="modal-body">
             <form onSubmit={formik.handleSubmit} noValidate>
               <div className="mb-3">
@@ -99,29 +104,21 @@ const ChannelModal = ({ type, channel, channels, onClose, onSubmit, onDelete }) 
                     </div>
                   )}
               </div>
+
               <div className="modal-footer">
                 <button
                   type="button"
-                  onClick={onClose}
                   className="btn btn-secondary"
+                  onClick={onClose}
                 >
                   Отменить
                 </button>
-                {isEdit && channel && (
-                  <button
-                    type="button"
-                    onClick={handleDelete}
-                    className="btn btn-danger"
-                  >
-                    Удалить
-                  </button>
-                )}
                 <button
                   type="submit"
                   className="btn btn-primary"
                   disabled={formik.isSubmitting}
                 >
-                  {isEdit ? 'Переименовать' : 'Создать'}
+                  Отправить
                 </button>
               </div>
             </form>
