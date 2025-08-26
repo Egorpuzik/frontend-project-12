@@ -176,15 +176,42 @@ const HomePage = () => {
                 >
                   <span>#</span> {filter.clean(channel.name)}
                 </button>
+
                 {canEdit && (
-                  <button
-                    type="button"
-                    aria-label="Управление каналом"
-                    className="btn btn-outline-secondary btn-sm ms-1"
-                    onClick={() => openModal('rename', channel)}
-                  >
-                    Управление каналом
-                  </button>
+                  <div className="dropdown ms-1">
+                    <button
+                      className="btn btn-sm btn-outline-secondary dropdown-toggle"
+                      type="button"
+                      id={`dropdown-${channel.id}`}
+                      data-bs-toggle="dropdown"
+                      aria-expanded="false"
+                    >
+                      Управление каналом
+                    </button>
+                    <ul
+                      className="dropdown-menu"
+                      aria-labelledby={`dropdown-${channel.id}`}
+                    >
+                      <li>
+                        <button
+                          type="button"
+                          className="dropdown-item"
+                          onClick={() => openModal('rename', channel)}
+                        >
+                          Переименовать
+                        </button>
+                      </li>
+                      <li>
+                        <button
+                          type="button"
+                          className="dropdown-item text-danger"
+                          onClick={() => openModal('remove', channel)}
+                        >
+                          Удалить
+                        </button>
+                      </li>
+                    </ul>
+                  </div>
                 )}
               </li>
             );
