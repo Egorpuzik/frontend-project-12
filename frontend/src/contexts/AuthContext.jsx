@@ -1,6 +1,6 @@
 import React, { createContext, useState, useEffect, useContext } from 'react';
 import axios from 'axios';
-import { disconnectSocket } from '../utils/socket.js';
+import { initSocket, disconnectSocket } from '../utils/socket.js';
 
 export const AuthContext = createContext();
 
@@ -17,6 +17,8 @@ export const AuthProvider = ({ children }) => {
       setUser({ username: savedAuth.username });
 
       axios.defaults.headers.common.Authorization = `Bearer ${savedAuth.token}`;
+
+      initSocket(savedAuth.token);
     }
 
     setLoading(false);
@@ -38,6 +40,8 @@ export const AuthProvider = ({ children }) => {
     setUser({ username });
 
     axios.defaults.headers.common.Authorization = `Bearer ${newToken}`;
+
+    initSocket(newToken);
   };
 
   const logout = () => {
@@ -46,6 +50,7 @@ export const AuthProvider = ({ children }) => {
     setUser(null);
 
     delete axios.defaults.headers.common.Authorization;
+
     disconnectSocket();
   };
 

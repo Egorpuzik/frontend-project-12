@@ -1,12 +1,13 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useRef, useEffect } from 'react';
 import { useFormik } from 'formik';
 import * as Yup from 'yup';
 import { useDispatch, useSelector } from 'react-redux';
-import { closeModal } from '../../store/modalsSlice.js';
-import { useSocket } from '../../hooks/index.js';
-import { setCurrentChannelId } from '../../store/channelsSlice.js';
-import filterProfanity from '../../utils/filterProfanity.js';
+import { closeModal } from '../../store/modalsSlice';
+import { useSocket } from '../../hooks';
+import { setCurrentChannelId } from '../../store/channelsSlice';
+import filterProfanity from '../../utils/filterProfanity';
 import { toast } from 'react-toastify';
+import ModalWrapper from './ModalWrapper';
 
 const AddChannelModal = () => {
   const dispatch = useDispatch();
@@ -14,6 +15,8 @@ const AddChannelModal = () => {
   const inputRef = useRef();
 
   const channels = useSelector((state) => state.channels.channels);
+  const { channelId } = useSelector((state) => state.modals);
+
   const existingChannelNames = channels.map((ch) => ch.name.toLowerCase());
 
   useEffect(() => {
@@ -50,15 +53,14 @@ const AddChannelModal = () => {
   });
 
   return (
-    <div className="modal show d-block" tabIndex="-1" role="dialog">
-      <div className="modal-dialog modal-dialog-centered" role="document">
+    <ModalWrapper>
+      <div className="modal-dialog" style={{ maxWidth: '500px', width: '100%' }}>
         <div className="modal-content">
           <div className="modal-header">
             <h5 className="modal-title">Добавить канал</h5>
             <button
               type="button"
               className="btn-close"
-              aria-label="Close"
               onClick={() => dispatch(closeModal())}
               disabled={formik.isSubmitting}
             />
@@ -74,16 +76,21 @@ const AddChannelModal = () => {
                   ref={inputRef}
                   name="name"
                   type="text"
-                  className={`form-control ${formik.errors.name && (formik.touched.name || formik.submitCount > 0) ? 'is-invalid' : ''}`}
+                  className={`form-control ${
+                    formik.errors.name && (formik.touched.name || formik.submitCount > 0)
+                      ? 'is-invalid'
+                      : ''
+                  }`}
                   value={formik.values.name}
                   onChange={formik.handleChange}
                   onBlur={formik.handleBlur}
                   disabled={formik.isSubmitting}
                   autoComplete="off"
                 />
-                {formik.errors.name && (formik.touched.name || formik.submitCount > 0) && (
-                  <div className="invalid-feedback">{formik.errors.name}</div>
-                )}
+                {formik.errors.name &&
+                  (formik.touched.name || formik.submitCount > 0) && (
+                    <div className="invalid-feedback">{formik.errors.name}</div>
+                  )}
               </div>
               <div className="modal-footer">
                 <button
@@ -97,9 +104,7 @@ const AddChannelModal = () => {
                 <button
                   type="submit"
                   className="btn btn-primary"
-                  disabled={
-                    formik.isSubmitting || !formik.isValid || !formik.dirty
-                  }
+                  disabled={formik.isSubmitting || !formik.isValid || !formik.dirty}
                 >
                   Отправить
                 </button>
@@ -108,7 +113,7 @@ const AddChannelModal = () => {
           </div>
         </div>
       </div>
-    </div>
+    </ModalWrapper>
   );
 };
 

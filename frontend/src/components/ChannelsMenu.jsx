@@ -1,20 +1,16 @@
 import React from 'react';
 import { useDispatch } from 'react-redux';
-import { setModalType, openModal, setModalChannel } from '../store/modalsSlice.js';
+import { openModal } from '../store/modalsSlice.js';
 
 const ChannelsMenu = ({ channel }) => {
   const dispatch = useDispatch();
 
   const handleRemove = () => {
-    dispatch(setModalChannel(channel));
-    dispatch(setModalType('removing'));
-    dispatch(openModal());
+    dispatch(openModal({ type: 'removing', channelId: channel.id }));
   };
 
   const handleRename = () => {
-    dispatch(setModalChannel(channel));
-    dispatch(setModalType('renaming'));
-    dispatch(openModal());
+    dispatch(openModal({ type: 'renaming', channelId: channel.id }));
   };
 
   return (

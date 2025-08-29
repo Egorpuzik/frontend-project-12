@@ -12,12 +12,9 @@ import './HomePage.css';
 const HomePage = () => {
   const dispatch = useDispatch();
   const { user } = useAuth();
-  const {
-    channels = [],
-    messages = [],
-    status = 'idle',
-    error,
-  } = useSelector((state) => state.chat || {});
+  const { channels = [], messages = [], status = 'idle', error } = useSelector(
+    (state) => state.chat || {}
+  );
 
   const [messageText, setMessageText] = useState('');
   const [disconnected, setDisconnected] = useState(false);
@@ -65,6 +62,7 @@ const HomePage = () => {
     };
   }, [dispatch]);
 
+  // Установка активного канала
   useEffect(() => {
     if (channels.length > 0 && !activeChannel) {
       const general = channels.find((c) => c.name === 'general') || channels[0];
@@ -72,6 +70,7 @@ const HomePage = () => {
     }
   }, [channels, activeChannel]);
 
+  // Скролл сообщений
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages, activeChannel]);
@@ -131,9 +130,10 @@ const HomePage = () => {
 
       if (activeChannel?.id === channel.id) {
         setActiveChannel(
-          channels.find((c) => c.name === 'general') || channels[0] || null,
+          channels.find((c) => c.name === 'general') || channels[0] || null
         );
       }
+      closeModal();
     } catch (err) {
       console.error('Ошибка удаления канала:', err);
       toast.error('Ошибка удаления');
@@ -141,14 +141,13 @@ const HomePage = () => {
     }
   };
 
-  if (status === 'loading')
-    return <div className="loading">Загрузка чата...</div>;
+  if (status === 'loading') return <div className="loading">Загрузка чата...</div>;
   if (error) return <div className="error">Ошибка загрузки: {error}</div>;
 
   return (
     <div className="chat-container">
       <div className="sidebar">
-        <div className="sidebar-header">
+        <div className="sidebar-header d-flex justify-content-between align-items-center">
           <span>Каналы</span>
           <button
             onClick={() => openModal('add')}
@@ -221,13 +220,10 @@ const HomePage = () => {
 
       {activeChannel ? (
         <div className="chat-main">
-          <div className="chat-header">
+          <div className="chat-header d-flex justify-content-between">
             <span>#{filter.clean(activeChannel.name)}</span>
             <span className="message-count">
-              {
-                messages.filter((m) => m.channelId === activeChannel.id).length
-              }{' '}
-              сообщений
+              {messages.filter((m) => m.channelId === activeChannel.id).length} сообщений
             </span>
           </div>
 
@@ -242,7 +238,7 @@ const HomePage = () => {
             <div ref={messagesEndRef} />
           </div>
 
-          <form onSubmit={handleSendMessage} className="message-form">
+          <form onSubmit={handleSendMessage} className="message-form d-flex">
             <input
               ref={messageInputRef}
               type="text"
@@ -251,7 +247,7 @@ const HomePage = () => {
               onChange={(e) => setMessageText(e.target.value)}
               placeholder="Введите сообщение..."
               disabled={disconnected}
-              className="form-control message-input"
+              className="form-control message-input me-2"
             />
             <button
               type="submit"

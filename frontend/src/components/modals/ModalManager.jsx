@@ -5,21 +5,20 @@ import RemoveChannelModal from './RemoveChannelModal';
 import RenameChannelModal from './RenameChannelModal';
 
 const ModalManager = () => {
-  const modalState = useSelector((state) => state.modals);
+  const { isOpen, type } = useSelector((state) => state.modals);
 
-  if (modalState.addChannel?.isOpen) {
-    return <AddChannelModal />;
+  if (!isOpen) return null;
+
+  switch (type) {
+    case 'adding':
+      return <AddChannelModal />;
+    case 'removing':
+      return <RemoveChannelModal />;
+    case 'renaming':
+      return <RenameChannelModal />;
+    default:
+      return null;
   }
-
-  if (modalState.removeChannel?.isOpen) {
-    return <RemoveChannelModal />;
-  }
-
-  if (modalState.renameChannel?.isOpen) {
-    return <RenameChannelModal />;
-  }
-
-  return null;
 };
 
 export default ModalManager;
