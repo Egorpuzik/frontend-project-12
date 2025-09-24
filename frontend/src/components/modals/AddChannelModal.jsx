@@ -15,8 +15,6 @@ const AddChannelModal = () => {
   const inputRef = useRef();
 
   const channels = useSelector((state) => state.channels.channels);
-  const { channelId } = useSelector((state) => state.modals);
-
   const existingChannelNames = channels.map((ch) => ch.name.toLowerCase());
 
   useEffect(() => {
@@ -45,7 +43,7 @@ const AddChannelModal = () => {
           resetForm();
           toast.success('Канал создан');
         } else {
-          setErrors({ name: 'Ошибка соединения' });
+          setErrors({ name: 'Ошибка сети' });
         }
         setSubmitting(false);
       });
@@ -61,6 +59,7 @@ const AddChannelModal = () => {
             <button
               type="button"
               className="btn-close"
+              aria-label="Close"
               onClick={() => dispatch(closeModal())}
               disabled={formik.isSubmitting}
             />
@@ -77,9 +76,7 @@ const AddChannelModal = () => {
                   name="name"
                   type="text"
                   className={`form-control ${
-                    formik.errors.name && (formik.touched.name || formik.submitCount > 0)
-                      ? 'is-invalid'
-                      : ''
+                    formik.touched.name && formik.errors.name ? 'is-invalid' : ''
                   }`}
                   value={formik.values.name}
                   onChange={formik.handleChange}
@@ -87,10 +84,9 @@ const AddChannelModal = () => {
                   disabled={formik.isSubmitting}
                   autoComplete="off"
                 />
-                {formik.errors.name &&
-                  (formik.touched.name || formik.submitCount > 0) && (
-                    <div className="invalid-feedback">{formik.errors.name}</div>
-                  )}
+                {formik.touched.name && formik.errors.name && (
+                  <div className="invalid-feedback">{formik.errors.name}</div>
+                )}
               </div>
               <div className="modal-footer">
                 <button

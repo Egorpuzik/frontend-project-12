@@ -1,10 +1,8 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import axios from 'axios';
 import { fetchChatData, newMessage, addChannel, removeChannel, renameChannel } from '../store/chatSlice.js';
 import { getSocket } from '../utils/socket.js';
 import { useAuth } from '../contexts/AuthContext.jsx';
-import { toast } from 'react-toastify';
 import filter from 'leo-profanity';
 import ChannelModal from '../components/ChannelModal.jsx';
 import './HomePage.css';
@@ -62,7 +60,6 @@ const HomePage = () => {
     };
   }, [dispatch]);
 
-  // Установка активного канала
   useEffect(() => {
     if (channels.length > 0 && !activeChannel) {
       const general = channels.find((c) => c.name === 'general') || channels[0];
@@ -70,7 +67,6 @@ const HomePage = () => {
     }
   }, [channels, activeChannel]);
 
-  // Скролл сообщений
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages, activeChannel]);
@@ -84,6 +80,7 @@ const HomePage = () => {
     if (!messageText.trim() || !activeChannel) return;
 
     try {
+      const axios = (await import('axios')).default;
       await axios.post('/api/v1/messages', {
         body: messageText.trim(),
         channelId: activeChannel.id,
@@ -93,7 +90,6 @@ const HomePage = () => {
       messageInputRef.current?.focus();
     } catch (err) {
       console.error('Ошибка отправки сообщения:', err);
-      toast.error('Ошибка соединения');
     }
   };
 
@@ -101,45 +97,6 @@ const HomePage = () => {
     setModalProps({ show: true, type, channel });
   const closeModal = () =>
     setModalProps({ show: false, type: 'add', channel: null });
-
-  const handleSubmitChannel = async (name, channel) => {
-    try {
-      if (channel) {
-        await axios.patch(`/api/v1/channels/${channel.id}`, { name });
-        dispatch(renameChannel({ ...channel, name }));
-        toast.success('Канал переименован');
-      } else {
-        const { data } = await axios.post('/api/v1/channels', { name });
-        dispatch(addChannel(data));
-        toast.success('Канал создан');
-      }
-      closeModal();
-    } catch (err) {
-      console.error('Ошибка добавления/переименования канала:', err);
-      toast.error('Ошибка соединения');
-      throw err;
-    }
-  };
-
-  const handleDeleteChannel = async (channel) => {
-    if (!channel) return;
-    try {
-      await axios.delete(`/api/v1/channels/${channel.id}`);
-      dispatch(removeChannel(channel.id));
-      toast.success('Канал удалён');
-
-      if (activeChannel?.id === channel.id) {
-        setActiveChannel(
-          channels.find((c) => c.name === 'general') || channels[0] || null
-        );
-      }
-      closeModal();
-    } catch (err) {
-      console.error('Ошибка удаления канала:', err);
-      toast.error('Ошибка удаления');
-      throw err;
-    }
-  };
 
   if (status === 'loading') return <div className="loading">Загрузка чата...</div>;
   if (error) return <div className="error">Ошибка загрузки: {error}</div>;
@@ -266,10 +223,7 @@ const HomePage = () => {
         <ChannelModal
           type={modalProps.type}
           channel={modalProps.channel}
-          channels={channels}
           onClose={closeModal}
-          onSubmit={handleSubmitChannel}
-          onDelete={handleDeleteChannel}
         />
       )}
     </div>

@@ -5,29 +5,35 @@ export const fetchChatData = createAsyncThunk(
   'chat/fetchData',
   async (_, { rejectWithValue }) => {
     try {
-      const savedAuth = JSON.parse(localStorage.getItem('userToken'));
-      const token = savedAuth?.token;
+      const token = localStorage.getItem('token');
 
       if (!token) {
-        console.warn('⚠️ Нет токена авторизации');
+        console.warn('⚠️ fetchChatData: отсутствует токен авторизации');
         return rejectWithValue('Нет токена авторизации');
       }
 
-      const config = { headers: { Authorization: `Bearer ${token}` } };
+      const config = {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      };
 
       const [channelsRes, messagesRes] = await Promise.all([
         axios.get('/api/v1/channels', config),
         axios.get('/api/v1/messages', config),
       ]);
 
+      const channels = channelsRes.data;
+      const messages = messagesRes.data;
+
       return {
-        channels: channelsRes.data || [],
-        messages: messagesRes.data || [],
-        currentChannelId: channelsRes.data?.[0]?.id || null,
+        channels,
+        messages,
+        currentChannelId: channels.length > 0 ? channels[0].id : null,
       };
     } catch (error) {
       console.error('❌ Ошибка fetchChatData:', error.response?.data || error.message);
-      return rejectWithValue(error.response?.data || 'Ошибка загрузки данных');
+      return rejectWithValue(error.response?.data || 'Ошибка загрузки');
     }
   }
 );
@@ -40,7 +46,6 @@ const chatSlice = createSlice({
     currentChannelId: null,
     status: 'idle',
     error: null,
-    lastAddedChannelId: null,
   },
   reducers: {
     newMessage: (state, action) => {
@@ -51,7 +56,6 @@ const chatSlice = createSlice({
     },
     addChannel: (state, action) => {
       state.channels.push(action.payload);
-      state.lastAddedChannelId = action.payload.id;
     },
     removeChannel: (state, action) => {
       const id = action.payload;
@@ -66,13 +70,6 @@ const chatSlice = createSlice({
       const { id, name } = action.payload;
       const channel = state.channels.find((ch) => ch.id === id);
       if (channel) channel.name = name;
-    },
-    resetChat: (state) => {
-      state.channels = [];
-      state.messages = [];
-      state.currentChannelId = null;
-      state.status = 'idle';
-      state.error = null;
     },
   },
   extraReducers: (builder) => {
@@ -90,20 +87,12 @@ const chatSlice = createSlice({
       .addCase(fetchChatData.rejected, (state, action) => {
         state.status = 'failed';
         state.error = action.payload;
-        state.channels = [];
-        state.messages = [];
-        state.currentChannelId = null;
       });
   },
 });
 
-export const {
-  newMessage,
-  setCurrentChannelId,
-  addChannel,
-  removeChannel,
-  renameChannel,
-  resetChat,
-} = chatSlice.actions;
+export const { newMessage, setCurrentChannelId, addChannel, removeChannel, renameChannel } =
+  chatSlice.actions;
 
 export default chatSlice.reducer;
+

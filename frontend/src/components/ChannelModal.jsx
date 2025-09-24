@@ -2,39 +2,39 @@ import React, { useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { useFormik } from 'formik';
 import * as Yup from 'yup';
-import { toast } from 'react-toastify';
 
-const ChannelModal = ({ type, channel, channels, onClose, onSubmit, onDelete }) => {
+const ChannelModal = ({ type, channel, channels = [], onClose, onSubmit, onDelete }) => {
   const isRename = type === 'rename';
   const isRemove = type === 'remove';
 
+  const validationSchema = Yup.object({
+    name: Yup.string()
+      .trim()
+      .min(3, 'От 3 до 20 символов')
+      .max(20, 'От 3 до 20 символов')
+      .required('Обязательное поле')
+      .test('unique', 'Такой канал уже существует', (value) => {
+        if (!value) return false;
+        const list = channels.map((c) => c.name.toLowerCase());
+        if (isRename && channel) {
+          const idx = list.indexOf(channel.name.toLowerCase());
+          if (idx !== -1) list.splice(idx, 1);
+        }
+        return !list.includes(value.toLowerCase());
+      }),
+  });
+
   const formik = useFormik({
     initialValues: { name: isRename && channel ? channel.name : '' },
-    validationSchema: Yup.object({
-      name: Yup.string()
-        .trim()
-        .min(3, 'От 3 до 20 символов')
-        .max(20, 'От 3 до 20 символов')
-        .required('Обязательное поле')
-        .test('unique', 'Такой канал уже существует', (value) => {
-          if (!value) return false;
-          const list = channels.map((c) => c.name.toLowerCase());
-          if (isRename && channel) {
-            const idx = list.indexOf(channel.name.toLowerCase());
-            if (idx !== -1) list.splice(idx, 1);
-          }
-          return !list.includes(value.toLowerCase());
-        }),
-    }),
+    validationSchema,
     validateOnChange: false,
     validateOnBlur: true,
     onSubmit: async ({ name }, { setSubmitting, setErrors }) => {
       try {
-        await onSubmit(name.trim(), isRename ? channel : null);
-        onClose();
-      } catch (e) {
+        await onSubmit(name, channel);
+      } catch (err) {
+        
         setErrors({ name: 'Ошибка соединения' });
-        toast.error('Ошибка соединения');
       } finally {
         setSubmitting(false);
       }
@@ -48,11 +48,10 @@ const ChannelModal = ({ type, channel, channels, onClose, onSubmit, onDelete }) 
   }, [isRename, channel?.id]);
 
   const handleDelete = async () => {
+    if (!channel) return;
     try {
       await onDelete(channel);
-      onClose();
-    } catch (e) {
-      toast.error('Ошибка удаления канала');
+    } catch {
     }
   };
 
@@ -75,11 +74,23 @@ const ChannelModal = ({ type, channel, channels, onClose, onSubmit, onDelete }) 
 
           <div className="modal-body">
             {isRemove ? (
-              <p>Вы действительно хотите удалить канал "{channel?.name}"?</p>
+              <>
+                <p>Вы действительно хотите удалить канал "{channel?.name}"?</p>
+                <div className="modal-footer">
+                  <button type="button" className="btn btn-secondary" onClick={onClose}>
+                    Отменить
+                  </button>
+                  <button type="button" className="btn btn-danger" onClick={handleDelete}>
+                    Удалить
+                  </button>
+                </div>
+              </>
             ) : (
               <form onSubmit={formik.handleSubmit} noValidate>
                 <div className="mb-3">
-                  <label htmlFor="channelName" className="form-label">Имя канала</label>
+                  <label htmlFor="channelName" className="form-label">
+                    Имя канала
+                  </label>
                   <input
                     id="channelName"
                     name="name"
@@ -90,16 +101,14 @@ const ChannelModal = ({ type, channel, channels, onClose, onSubmit, onDelete }) 
                     placeholder="Введите имя канала"
                     autoFocus
                     className={`form-control ${
-                      formik.errors.name &&
-                      (formik.touched.name || formik.submitCount > 0)
+                      formik.errors.name && (formik.touched.name || formik.submitCount > 0)
                         ? 'is-invalid'
                         : ''
                     }`}
                   />
-                  {formik.errors.name &&
-                    (formik.touched.name || formik.submitCount > 0) && (
-                      <div className="invalid-feedback d-block">{formik.errors.name}</div>
-                    )}
+                  {formik.errors.name && (formik.touched.name || formik.submitCount > 0) && (
+                    <div className="invalid-feedback d-block">{formik.errors.name}</div>
+                  )}
                 </div>
 
                 <div className="modal-footer">
@@ -111,16 +120,6 @@ const ChannelModal = ({ type, channel, channels, onClose, onSubmit, onDelete }) 
                   </button>
                 </div>
               </form>
-            )}
-            {isRemove && (
-              <div className="modal-footer">
-                <button type="button" className="btn btn-secondary" onClick={onClose}>
-                  Отменить
-                </button>
-                <button type="button" className="btn btn-danger" onClick={handleDelete}>
-                  Удалить
-                </button>
-              </div>
             )}
           </div>
         </div>

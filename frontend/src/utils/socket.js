@@ -4,8 +4,7 @@ let socket = null;
 
 export const initSocket = (token) => {
   if (socket) {
-    socket.disconnect();
-    socket = null;
+    return socket;
   }
 
   const url = import.meta.env.VITE_API_URL || 'http://localhost:5001';

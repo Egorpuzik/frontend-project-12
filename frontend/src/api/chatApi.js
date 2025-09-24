@@ -1,8 +1,16 @@
-const API_URL = '/api/v1/messages';
+const API_URL = import.meta.env?.VITE_API_URL
+  ? `${import.meta.env.VITE_API_URL}/api/v1/messages`
+  : '/api/v1/messages';
 
 export const sendMessage = async (message) => {
   try {
-    const token = localStorage.getItem('token');
+    const savedAuth = JSON.parse(localStorage.getItem('userToken'));
+    const token = savedAuth?.token;
+
+    if (!token) {
+      throw new Error('Нет токена авторизации, сообщение не отправлено');
+    }
+
     const response = await fetch(API_URL, {
       method: 'POST',
       headers: {
@@ -16,10 +24,10 @@ export const sendMessage = async (message) => {
       throw new Error(`Ошибка при отправке: ${response.statusText}`);
     }
 
-    const data = await response.json();
-    return data;
+    return await response.json();
   } catch (error) {
     console.error('Ошибка отправки сообщения:', error);
     throw error;
   }
 };
+

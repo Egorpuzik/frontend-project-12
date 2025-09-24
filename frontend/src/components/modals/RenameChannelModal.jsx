@@ -1,4 +1,5 @@
 import React, { useRef, useEffect } from 'react';
+import PropTypes from 'prop-types';
 import { useDispatch, useSelector } from 'react-redux';
 import { useFormik } from 'formik';
 import * as Yup from 'yup';
@@ -6,16 +7,16 @@ import { closeModal } from '../../store/modalsSlice';
 import { useSocket } from '../../hooks';
 import filterProfanity from '../../utils/filterProfanity';
 import { toast } from 'react-toastify';
+import ModalWrapper from './ModalWrapper';
 
-const RenameChannelModal = () => {
+const RenameChannelModal = ({ channelId }) => {
   const dispatch = useDispatch();
   const socket = useSocket();
   const inputRef = useRef();
 
-  const { isOpen, type, channelId } = useSelector((state) => state.modals);
   const channels = useSelector((state) => state.channels.channels);
 
-  if (!isOpen || type !== 'renaming' || channelId == null) return null;
+  if (!channelId) return null;
 
   const channel = channels.find((ch) => ch.id === channelId);
   if (!channel) return null;
@@ -26,7 +27,7 @@ const RenameChannelModal = () => {
 
   useEffect(() => {
     inputRef.current?.focus();
-  }, [isOpen]);
+  }, []);
 
   const formik = useFormik({
     initialValues: { name: channel.name },
@@ -38,14 +39,13 @@ const RenameChannelModal = () => {
         .required('Обязательное поле')
         .notOneOf(existingNames, 'Такое имя уже существует'),
     }),
-    onSubmit: ({ name }, { setSubmitting, resetForm, setErrors }) => {
+    onSubmit: ({ name }, { setSubmitting, setErrors }) => {
       const cleanedName = filterProfanity(name.trim());
 
       socket.emit('renameChannel', { id: channel.id, name: cleanedName }, (response) => {
         if (response.status === 'ok') {
           toast.success('Канал переименован');
           dispatch(closeModal());
-          resetForm();
         } else {
           setErrors({ name: 'Ошибка сети' });
         }
@@ -56,28 +56,15 @@ const RenameChannelModal = () => {
   });
 
   return (
-    <div
-      className="modal-backdrop"
-      style={{
-        position: 'fixed',
-        top: 0,
-        left: 0,
-        width: '100vw',
-        height: '100vh',
-        backgroundColor: 'rgba(0,0,0,0.5)',
-        zIndex: 1050,
-        display: 'flex',
-        justifyContent: 'center',
-        alignItems: 'center',
-      }}
-    >
-      <div className="modal-dialog" style={{ maxWidth: '500px', width: '100%' }} role="document">
+    <ModalWrapper>
+      <div className="modal-dialog" style={{ maxWidth: '500px', width: '100%' }}>
         <div className="modal-content">
           <div className="modal-header">
             <h5 className="modal-title">Переименовать канал</h5>
             <button
               type="button"
               className="btn-close"
+              aria-label="Close"
               onClick={() => dispatch(closeModal())}
               disabled={formik.isSubmitting}
             />
@@ -127,8 +114,12 @@ const RenameChannelModal = () => {
           </div>
         </div>
       </div>
-    </div>
+    </ModalWrapper>
   );
+};
+
+RenameChannelModal.propTypes = {
+  channelId: PropTypes.number,
 };
 
 export default RenameChannelModal;
