@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import { useDispatch } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import { Routes, Route } from 'react-router-dom';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
@@ -23,11 +23,12 @@ import rollbarConfig from './utils/rollbarConfig.js';
 const AppContent = () => {
   const dispatch = useDispatch();
   const { user, loading } = useAuth();
+  const chatState = useSelector((state) => state.chat);
 
   useEffect(() => {
     if (!user) return;
 
-    dispatch(fetchChatData()); 
+    dispatch(fetchChatData());
 
     const socket = initSocket(user.token);
 
@@ -45,7 +46,21 @@ const AppContent = () => {
   }, [dispatch, user]);
 
   if (loading) {
-    return <div>Загрузка...</div>;
+    return <div style={{ textAlign: 'center', marginTop: '50px' }}>Загрузка...</div>;
+  }
+
+  if (chatState.status === 'loading') {
+    return <div style={{ textAlign: 'center', marginTop: '50px' }}>Загрузка данных чата...</div>;
+  }
+
+  if (chatState.status === 'failed') {
+    return (
+      <div style={{ textAlign: 'center', marginTop: '50px', color: 'red' }}>
+        Ошибка загрузки данных: {JSON.stringify(chatState.error)}
+        <br />
+        <a href="/login">Попробовать снова (войти)</a>
+      </div>
+    );
   }
 
   return (
@@ -70,7 +85,7 @@ const AppContent = () => {
 
 const App = () => (
   <RollbarProvider config={rollbarConfig}>
-    <ErrorBoundary>
+    <ErrorBoundary fallbackUI={<div style={{ textAlign: 'center', marginTop: '50px' }}>Произошла ошибка. Перезагрузите страницу.</div>}>
       <AuthProvider>
         <Header />
         <ModalManager />

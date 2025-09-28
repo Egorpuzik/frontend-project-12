@@ -1,14 +1,18 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import axios from 'axios';
 
+const API_BASE_URL = import.meta.env.VITE_API_URL || '';
+
 export const fetchChatData = createAsyncThunk(
   'chat/fetchData',
   async (_, { rejectWithValue }) => {
     try {
-      const token = localStorage.getItem('token');
+      const savedAuth = JSON.parse(localStorage.getItem('userToken'));
+      const token = savedAuth?.token;
 
       if (!token) {
         console.warn('⚠️ fetchChatData: отсутствует токен авторизации');
+        window.location.href = '/login'; 
         return rejectWithValue('Нет токена авторизации');
       }
 
@@ -19,21 +23,26 @@ export const fetchChatData = createAsyncThunk(
       };
 
       const [channelsRes, messagesRes] = await Promise.all([
-        axios.get('/api/v1/channels', config),
-        axios.get('/api/v1/messages', config),
+        axios.get(`${API_BASE_URL}/api/v1/channels`, config),
+        axios.get(`${API_BASE_URL}/api/v1/messages`, config),
       ]);
 
-      const channels = channelsRes.data;
-      const messages = messagesRes.data;
-
       return {
-        channels,
-        messages,
-        currentChannelId: channels.length > 0 ? channels[0].id : null,
+        channels: channelsRes.data || [],
+        messages: messagesRes.data || [],
+        currentChannelId:
+          (channelsRes.data && channelsRes.data[0]?.id) || null,
       };
     } catch (error) {
-      console.error('❌ Ошибка fetchChatData:', error.response?.data || error.message);
-      return rejectWithValue(error.response?.data || 'Ошибка загрузки');
+      const status = error.response?.status;
+      console.error('❌ Ошибка fetchChatData:', status, error.response?.data || error.message);
+
+      if (status === 401) {
+        localStorage.removeItem('userToken');
+        window.location.href = '/login';
+      }
+
+      return rejectWithValue(error.response?.data || 'Ошибка загрузки данных');
     }
   }
 );
@@ -59,7 +68,7 @@ const chatSlice = createSlice({
     },
     removeChannel: (state, action) => {
       const id = action.payload;
-      state.channels = state.channels.filter((channel) => channel.id !== id);
+      state.channels = state.channels.filter((ch) => ch.id !== id);
       state.messages = state.messages.filter((msg) => msg.channelId !== id);
 
       if (state.currentChannelId === id) {
@@ -70,6 +79,13 @@ const chatSlice = createSlice({
       const { id, name } = action.payload;
       const channel = state.channels.find((ch) => ch.id === id);
       if (channel) channel.name = name;
+    },
+    resetChat: (state) => {
+      state.channels = [];
+      state.messages = [];
+      state.currentChannelId = null;
+      state.status = 'idle';
+      state.error = null;
     },
   },
   extraReducers: (builder) => {
@@ -91,8 +107,13 @@ const chatSlice = createSlice({
   },
 });
 
-export const { newMessage, setCurrentChannelId, addChannel, removeChannel, renameChannel } =
-  chatSlice.actions;
+export const {
+  newMessage,
+  setCurrentChannelId,
+  addChannel,
+  removeChannel,
+  renameChannel,
+  resetChat,
+} = chatSlice.actions;
 
 export default chatSlice.reducer;
-
