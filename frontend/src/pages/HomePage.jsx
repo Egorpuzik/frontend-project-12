@@ -5,6 +5,7 @@ import { getSocket } from '../utils/socket.js';
 import { useAuth } from '../contexts/AuthContext.jsx';
 import filter from 'leo-profanity';
 import ChannelModal from '../components/ChannelModal.jsx';
+import { toast } from 'react-toastify';
 import './HomePage.css';
 
 const HomePage = () => {
@@ -39,7 +40,10 @@ const HomePage = () => {
     const handleRemoveChannel = ({ id }) => dispatch(removeChannel(id));
     const handleRenameChannel = (channel) => dispatch(renameChannel(channel));
     const onDisconnect = () => setDisconnected(true);
-    const onConnect = () => setDisconnected(false);
+    const onConnect = () => {
+      setDisconnected(false);
+      dispatch(fetchChatData());
+    };
 
     socket.on('newMessage', handleNewMessage);
     socket.on('newChannel', handleNewChannel);
@@ -75,6 +79,13 @@ const HomePage = () => {
     messageInputRef.current?.focus();
   }, [activeChannel]);
 
+  useEffect(() => {
+    if (error) {
+      console.error('Ошибка загрузки данных:', error);
+      toast.error(`Не удалось загрузить данные: ${error}`);
+    }
+  }, [error]);
+
   const handleSendMessage = async (e) => {
     e.preventDefault();
     if (!messageText.trim() || !activeChannel) return;
@@ -90,6 +101,7 @@ const HomePage = () => {
       messageInputRef.current?.focus();
     } catch (err) {
       console.error('Ошибка отправки сообщения:', err);
+      toast.error('Не удалось отправить сообщение');
     }
   };
 
@@ -97,9 +109,6 @@ const HomePage = () => {
     setModalProps({ show: true, type, channel });
   const closeModal = () =>
     setModalProps({ show: false, type: 'add', channel: null });
-
-  if (status === 'loading') return <div className="loading">Загрузка чата...</div>;
-  if (error) return <div className="error">Ошибка загрузки: {error}</div>;
 
   return (
     <div className="chat-container">
@@ -114,110 +123,119 @@ const HomePage = () => {
             +
           </button>
         </div>
+        {status === 'loading' && <div className="loading">Загрузка каналов...</div>}
         <ul className="list-group channel-list">
-          {channels.map((channel) => {
-            const canEdit = !['general', 'random'].includes(channel.name);
-            return (
-              <li
-                key={channel.id}
-                className="list-group-item p-0 border-0 d-flex justify-content-between align-items-center"
-              >
-                <button
-                  type="button"
-                  aria-label={filter.clean(channel.name)}
-                  onClick={() => setActiveChannel(channel)}
-                  className={`w-100 text-start btn btn-light ${
-                    activeChannel?.id === channel.id ? 'active' : ''
-                  }`}
+          {channels.length > 0 ? (
+            channels.map((channel) => {
+              const canEdit = !['general', 'random'].includes(channel.name);
+              return (
+                <li
+                  key={channel.id}
+                  className="list-group-item p-0 border-0 d-flex justify-content-between align-items-center"
                 >
-                  <span>#</span> {filter.clean(channel.name)}
-                </button>
+                  <button
+                    type="button"
+                    aria-label={filter.clean(channel.name)}
+                    onClick={() => setActiveChannel(channel)}
+                    className={`w-100 text-start btn btn-light ${
+                      activeChannel?.id === channel.id ? 'active' : ''
+                    }`}
+                  >
+                    <span>#</span> {filter.clean(channel.name)}
+                  </button>
 
-                {canEdit && (
-                  <div className="dropdown ms-1">
-                    <button
-                      className="btn btn-sm btn-outline-secondary dropdown-toggle"
-                      type="button"
-                      id={`dropdown-${channel.id}`}
-                      data-bs-toggle="dropdown"
-                      aria-expanded="false"
-                    >
-                      Управление каналом
-                    </button>
-                    <ul
-                      className="dropdown-menu"
-                      aria-labelledby={`dropdown-${channel.id}`}
-                    >
-                      <li>
-                        <button
-                          type="button"
-                          className="dropdown-item"
-                          onClick={() => openModal('rename', channel)}
-                        >
-                          Переименовать
-                        </button>
-                      </li>
-                      <li>
-                        <button
-                          type="button"
-                          className="dropdown-item text-danger"
-                          onClick={() => openModal('remove', channel)}
-                        >
-                          Удалить
-                        </button>
-                      </li>
-                    </ul>
-                  </div>
-                )}
-              </li>
-            );
-          })}
+                  {canEdit && (
+                    <div className="dropdown ms-1">
+                      <button
+                        className="btn btn-sm btn-outline-secondary dropdown-toggle"
+                        type="button"
+                        id={`dropdown-${channel.id}`}
+                        data-bs-toggle="dropdown"
+                        aria-expanded="false"
+                      >
+                        Управление каналом
+                      </button>
+                      <ul
+                        className="dropdown-menu"
+                        aria-labelledby={`dropdown-${channel.id}`}
+                      >
+                        <li>
+                          <button
+                            type="button"
+                            className="dropdown-item"
+                            onClick={() => openModal('rename', channel)}
+                          >
+                            Переименовать
+                          </button>
+                        </li>
+                        <li>
+                          <button
+                            type="button"
+                            className="dropdown-item text-danger"
+                            onClick={() => openModal('remove', channel)}
+                          >
+                            Удалить
+                          </button>
+                        </li>
+                      </ul>
+                    </div>
+                  )}
+                </li>
+              );
+            })
+          ) : (
+            <li className="text-muted p-2">Нет каналов</li>
+          )}
         </ul>
       </div>
 
-      {activeChannel ? (
-        <div className="chat-main">
-          <div className="chat-header d-flex justify-content-between">
-            <span>#{filter.clean(activeChannel.name)}</span>
-            <span className="message-count">
-              {messages.filter((m) => m.channelId === activeChannel.id).length} сообщений
-            </span>
-          </div>
+      <div className="chat-main">
+        {activeChannel ? (
+          <>
+            <div className="chat-header d-flex justify-content-between">
+              <span>#{filter.clean(activeChannel.name)}</span>
+              <span className="message-count">
+                {messages.filter((m) => m.channelId === activeChannel.id).length} сообщений
+              </span>
+            </div>
 
-          <div className="message-list">
-            {messages
-              .filter((m) => m.channelId === activeChannel.id)
-              .map((msg) => (
-                <div key={msg.id} className="message">
-                  <strong>{msg.username}:</strong> {filter.clean(msg.body)}
-                </div>
-              ))}
-            <div ref={messagesEndRef} />
-          </div>
+            <div className="message-list">
+              {messages
+                .filter((m) => m.channelId === activeChannel.id)
+                .map((msg) => (
+                  <div key={msg.id} className="message">
+                    <strong>{msg.username}:</strong> {filter.clean(msg.body)}
+                  </div>
+                ))}
+              <div ref={messagesEndRef} />
+            </div>
 
-          <form onSubmit={handleSendMessage} className="message-form d-flex">
-            <input
-              ref={messageInputRef}
-              type="text"
-              aria-label="Новое сообщение"
-              value={messageText}
-              onChange={(e) => setMessageText(e.target.value)}
-              placeholder="Введите сообщение..."
-              disabled={disconnected}
-              className="form-control message-input me-2"
-            />
-            <button
-              type="submit"
-              disabled={disconnected}
-              className="btn btn-primary send-btn"
-            >
-              ➤
-            </button>
-          </form>
-        </div>
-      ) : (
-        <div className="chat-placeholder">Выберите канал</div>
-      )}
+            <form onSubmit={handleSendMessage} className="message-form d-flex">
+              <input
+                ref={messageInputRef}
+                type="text"
+                aria-label="Новое сообщение"
+                value={messageText}
+                onChange={(e) => setMessageText(e.target.value)}
+                placeholder="Введите сообщение..."
+                disabled={disconnected}
+                className="form-control message-input me-2"
+              />
+              <button
+                type="submit"
+                disabled={disconnected}
+                className="btn btn-primary send-btn"
+              >
+                ➤
+              </button>
+            </form>
+          </>
+        ) : (
+          <div className="chat-placeholder">
+            {status === 'loading' ? 'Загрузка...' : 'Выберите или создайте канал'}
+          </div>
+        )}
+      </div>
 
       {modalProps.show && (
         <ChannelModal
